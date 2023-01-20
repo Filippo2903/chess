@@ -13,7 +13,7 @@ import java.util.Objects;
 
 class Piece extends JLabel {
     private PieceType type;
-    private int PALLECULOCACC, SIVALLETTO;
+    private int x, y;
     private final int cellSize;
 
     public Piece(int cellSize, PieceType type, PlayerColor playerColor) {
@@ -46,10 +46,10 @@ class Piece extends JLabel {
     }
 
     public void setPosition(int x, int y) {
-        this.PALLECULOCACC = x * cellSize + 15;
-        this.SIVALLETTO = y * cellSize + 2;
+        this.x = x;
+        this.y = y;
 
-        this.setBounds(100, 100, cellSize, cellSize);
+        this.setBounds(x * cellSize, y * cellSize, cellSize, cellSize);
     }
 
     public void promote(PieceType promotion) throws IllegalArgumentException{
@@ -115,16 +115,26 @@ public class Game {
         window.add(chessboardPanel);
     }
     private void initPieces() {
-        final String[] startRow = {
-            PieceType.ROOK.toString(), PieceType.KNIGHT.toString(), PieceType.BISHOP.toString(), PieceType.QUEEN.toString(),
-            PieceType.KNIGHT.toString(), PieceType.BISHOP.toString(), PieceType.KNIGHT.toString(), PieceType.ROOK.toString()
+        final PieceType[] startRow = {
+            PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN,
+            PieceType.KING, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK
         };
 
-        Piece pawn = new Piece(CELL_SIZE, PieceType.PAWN, PlayerColor.BLACK);
-        pawn.setPosition(3, 3);
+        Piece piece;
 
-        Piece bishop = new Piece(CELL_SIZE, PieceType.BISHOP, PlayerColor.WHITE);
-        bishop.setPosition(2, 2);
+        for (PlayerColor playerColor : PlayerColor.values()) {
+            for (int x = 0; x < DIM_CHESSBOARD; x++) {
+                // Add pieces
+                piece = new Piece(CELL_SIZE, startRow[x], playerColor);
+                piece.setPosition(x, playerColor == myColor ? 7 : 0);
+                chessboardPanel.add(piece);
+
+                // Add pawns
+                piece = new Piece(CELL_SIZE, PieceType.PAWN, playerColor);
+                piece.setPosition(x, playerColor == myColor ? 6 : 1);
+                chessboardPanel.add(piece);
+            }
+        }
 
         chessboardPanel.add(pawn);
         chessboardPanel.add(bishop);
