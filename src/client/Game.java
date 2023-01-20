@@ -39,9 +39,6 @@ class Piece extends JLabel {
         }
 
         this.setIcon(new ImageIcon(icon.getScaledInstance(cellSize, cellSize, Image.SCALE_SMOOTH)));
-
-        this.setBorder(BorderFactory.createLineBorder(Color.red, 3));
-
         this.setVisible(true);
     }
 
@@ -58,12 +55,6 @@ class Piece extends JLabel {
         type = promotion;
     }
 
-    public int getX() {
-        return PALLECULOCACC;
-    }
-    public int getY() {
-        return SIVALLETTO;
-    }
     public PieceType getType() {
         return type;
     }
@@ -77,6 +68,10 @@ public class Game {
 
     private final JFrame window = new JFrame();
     private JPanel chessboardPanel;
+
+    // Todo
+    private final PlayerColor myColor = PlayerColor.WHITE;
+
     private void initWindow() {
         window.setTitle("Chess");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -86,6 +81,7 @@ public class Game {
         window.setVisible(true);
 //        window.setBackground(Color.red);
     }
+
     private void initChessboard() {
         final Color ODD_CELL_COLOR = new Color(0xFFEFD5),
                     EVEN_CELL_COLOR = new Color(0x654321);
@@ -114,6 +110,7 @@ public class Game {
 
         window.add(chessboardPanel);
     }
+
     private void initPieces() {
         final PieceType[] startRow = {
             PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN,
@@ -136,10 +133,9 @@ public class Game {
             }
         }
 
-        chessboardPanel.add(pawn);
-        chessboardPanel.add(bishop);
         window.repaint();
     }
+
     public void initGame() {
         initWindow();
         initChessboard();

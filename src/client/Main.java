@@ -10,7 +10,17 @@ import java.util.Objects;
 
 public class Main {
     public static void main(String[] args) {
-        Sivalletto game = new Sivalletto();
+        Game game = new Game();
         game.initGame();
+//        BufferedImage image = null;
+//        try {
+//            image = ImageIO.read(Objects.requireNonNull(
+//                    Main.class.getResource("assets/whiteBishop.png")
+//            ));
+//        } catch (IOException e) {
+//            System.err.println("Erorr");
+//        }
+//
+//        System.out.println(image != null ? image.toString() : null);
     }
 }
