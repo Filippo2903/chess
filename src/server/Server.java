@@ -1,5 +1,8 @@
 package server;
 
+import gameUtils.Packet;
+import gameUtils.PlayerColor;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -15,8 +18,13 @@ public class Server {
         try {
             serverSocket = new ServerSocket(4445);
 
+            System.out.println("Server listening...");
+
             Socket clientSocketOne = serverSocket.accept();
+            System.out.println("Player one connected!");
+
             Socket clientSocketTwo = serverSocket.accept();
+            System.out.println("Player two connected!");
 
             PlayerColor colorPlayerOne, colorPlayerTwo;
             if ((int) (Math.random() * 2) == 0) {
@@ -26,6 +34,9 @@ public class Server {
                 colorPlayerOne = PlayerColor.BLACK;
                 colorPlayerTwo = PlayerColor.WHITE;
             }
+
+            System.out.println("Assigned color " + colorPlayerOne + " to player one");
+            System.out.println("Assigned color " + colorPlayerTwo + " to player two");
 
             ClientHandler server = new ClientHandler(clientSocketOne, clientSocketTwo, colorPlayerOne, colorPlayerTwo);
 
@@ -56,8 +67,6 @@ public class Server {
 
     private static class ClientHandler {
         public ClientHandler(Socket clientPlayerOne, Socket clientPlayerTwo, PlayerColor colorPlayerOne, PlayerColor colorPlayerTwo) {
-//            Scanner inputPlayerOne, inputPlayerTwo;
-//            PrintWriter outputPlayerOne, outputPlayerTwo;
             try {
                 inputPlayerOne = new Scanner(clientPlayerOne.getInputStream());
                 outputPlayerOne = new PrintWriter(clientPlayerOne.getOutputStream(), true);
@@ -76,7 +85,6 @@ public class Server {
             String serializedMove;
             // Read from sender client
             serializedMove = sender.nextLine();
-            System.out.println("Read " + serializedMove);
 
             Packet packet = null;
             try {

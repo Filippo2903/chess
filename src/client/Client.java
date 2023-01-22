@@ -9,16 +9,45 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import java.util.Scanner;
-
 public class Client {
+    private static PrintWriter os = null;
+    private static BufferedReader is = null;
+    private static Socket socket = null;
+
+    public static void sendMove(Packet packet) {
+        try {
+            os.println(packet.serializeToString());
+        } catch (IOException e) {
+            System.err.println("Error while trying to serialize Move");
+            System.exit(-1);
+        }
+    }
+
+    public static void receiveMove() {
+        String response = null;
+
+        try {
+            response = is.readLine();
+        } catch (Exception e) {
+            System.err.println("Error getting the response");
+            System.exit(-1);
+        }
+
+        Packet packet = null;
+        try {
+            packet = Packet.fromString(response);
+        } catch (Exception e) {
+            System.err.println("Error serializing the packet");
+            System.exit(-1);
+        }
+
+        Game.enemyMove(packet);
+    }
+
     public static void main(String[] args) throws IOException {
         InetAddress address = InetAddress.getLocalHost();
-        Socket socket = null;
-        String line;
-        Scanner scanner = new Scanner(System.in);
-        Scanner is = null;
-        PrintWriter os = null;
+
+        Game game;
 
         try {
             socket = new Socket(address, 4445);
@@ -31,7 +60,6 @@ public class Client {
         }
 
         System.out.println("Client Address : " + address);
-        System.out.println("Enter Data to echo Server ( Enter QUIT to end):");
 
         String colorName = is.readLine();
         PlayerColor color = colorName.equals("WHITE") ? PlayerColor.WHITE : PlayerColor.BLACK;
@@ -47,10 +75,15 @@ public class Client {
     public static void endCommunication() {
         try {
             is.close();
-            os.close();
-            scanner.close();
-            socket.close();
-            System.out.println("Connection Closed");
+        } catch (IOException e) {
+            System.err.println("Error closing the is");
         }
+        os.close();
+        try {
+            socket.close();
+        } catch (IOException e) {
+            System.err.println("Error closing the socket");
+        }
+        System.out.println("Connection Closed");
     }
 }

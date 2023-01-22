@@ -1,8 +1,6 @@
 package client;
 
-import gameUtils.Move;
-import gameUtils.PieceType;
-import gameUtils.PlayerColor;
+import gameUtils.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -10,7 +8,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Function;
 
 
 public class Game {
@@ -22,13 +19,16 @@ public class Game {
     private final JFrame window = new JFrame();
     private JPanel chessboardPanel;
 
-    // Todo colore deciso dal server
-    private final PlayerColor myColor = PlayerColor.BLACK;
+    private static PlayerColor myColor;
 
     private static Piece[][] board;
 
+    private static PlayerColor playerTurn;
+
     public Game(PlayerColor color) {
         myColor = color;
+
+        playerTurn = PlayerColor.WHITE;
     }
 
     private void initWindow() {
@@ -88,7 +88,7 @@ public class Game {
             PieceType.KING, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK
         };
 
-        Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
+        board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
         Arrays.stream(board).forEach(cell -> Arrays.fill(cell, null));
 
         Piece piece;
@@ -113,5 +113,37 @@ public class Game {
         initWindow();
         initChessboard();
         initPieces();
+    }
+
+    public static Piece[][] getBoard() {
+        return board;
+    }
+
+    public static void editBoardCell(Point cell, Piece value) {
+        board[cell.y][cell.x] = value;
+    }
+
+    public static PlayerColor getPlayerColor() {
+        return myColor;
+    }
+    public static PlayerColor getPlayerTurn() {
+        return playerTurn;
+    }
+    public static void changePlayerTurn() {
+        playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+    }
+
+    public static void enemyMove(Packet packet) {
+        Piece piece = board[packet.from.y][packet.from.x];
+        board[packet.from.y][packet.from.x] = null;
+
+        Piece pieceTo = board[packet.to.y][packet.to.x];
+        if (pieceTo != null)
+            pieceTo.kill();
+        board[packet.to.y][packet.to.x] = piece;
+
+        piece.setPosition(packet.to.x, packet.to.y);
+
+        changePlayerTurn();
     }
 }
