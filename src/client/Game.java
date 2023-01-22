@@ -53,8 +53,8 @@ public class Game {
     }
 
     private void initChessboard() {
-        final Color ODD_CELL_COLOR = new Color(0xFFEFD5),
-                    EVEN_CELL_COLOR = new Color(0x654321);
+        final Color BLACK_CELL = new Color(0xFFEFD5),
+                    WHITE_CELL = new Color(0x654321);
 
         chessboardPanel = new JPanel() {
             @Override
@@ -64,9 +64,9 @@ public class Game {
                 for (int i = 0; i < DIM_CHESSBOARD; i++) {
                     for (int j = 0; j < DIM_CHESSBOARD; j++) {
                         if ((i + j) % 2 == 0) {
-                            g.setColor(ODD_CELL_COLOR);
+                            g.setColor(myColor == PlayerColor.WHITE ? BLACK_CELL : WHITE_CELL);
                         } else {
-                            g.setColor(EVEN_CELL_COLOR);
+                            g.setColor(myColor == PlayerColor.WHITE ? WHITE_CELL : BLACK_CELL);
                         }
                         g.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                     }

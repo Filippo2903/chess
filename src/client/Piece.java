@@ -129,17 +129,47 @@ public class Piece extends JLabel {
         this.addMouseMotionListener(mouseAdapter);
     }
 
+    private Point diagonalMove(Point cell) {
+        Point direction = new Point();
+
+        if (Math.abs(cell.x - currentPosition.x) == Math.abs(cell.y - currentPosition.y) ||
+            Math.abs(cell.x + currentPosition.x) == Math.abs(cell.y - currentPosition.y) ||
+            Math.abs(cell.x + currentPosition.x) == Math.abs(cell.y + currentPosition.y) ||
+            Math.abs(cell.x - currentPosition.x) == Math.abs(cell.y + currentPosition.y) ) {
+
+            direction.x = currentPosition.x - cell.x > 0 ? -1 : 1;
+            direction.y = currentPosition.y - cell.y > 0 ? -1 : 1;
+        }
+
+        return direction;
+    }
+    private Point straightMove(Point cell) {
+        Point direction = new Point();
+
+        if (cell.x == currentPosition.x) {
+            direction.x = 0;
+            direction.y = currentPosition.y > cell.y ? -1 : 1;
+        }
+        else if (cell.y == currentPosition.y) {
+            direction.x = currentPosition.x > cell.x ? -1 : 1;
+            direction.y = 0;
+        }
+
+        return direction;
+    }
+
     public boolean canMove(Point cell) {
         if (Game.getPlayerTurn() != Game.getPlayerColor())
             return false;
 
         Piece[][] board = Game.getBoard();
 
-        // If the user tries to move a piece that isn't his
+        // If is not the turn of the player turn
         if (this.getColor() != Game.getPlayerColor()) {
             return false;
         }
 
+        // If the user tries to move a piece that isn't his
         if (board[cell.y][cell.x] != null && board[cell.y][cell.x].getColor() == Game.getPlayerColor()) {
             return false;
         }
@@ -170,6 +200,7 @@ public class Piece extends JLabel {
                 for (Point move : takeMoves) {
                     if ((cell.x == currentPosition.x + move.x && cell.y == currentPosition.y + move.y) &&
                         board[cell.y + 1][cell.x] != null &&
+                        board[cell.y + 1][cell.x].getType() == PieceType.PAWN &&
                         currentPosition.y == enPassantPositionY) {
 
                         board[cell.y + 1][cell.x].kill();
@@ -224,23 +255,104 @@ public class Piece extends JLabel {
                 }
             }
 
-//            case BISHOP -> {
-//                Point[] directions = {
-//                        new Point(-1, -1),
-//                        new Point(1, -1),
-//                        new Point(1, 1),
-//                        new Point(-1, 1)
-//                };
+            case BISHOP -> {
+                Point ghostBishop = new Point(currentPosition.x, currentPosition.y);
+                Point direction = diagonalMove(cell);
+
+                if (direction.x == 0 && direction.y == 0) {
+                    return false;
+                }
+
+                while (ghostBishop.x != cell.x - direction.x || ghostBishop.y != cell.y - direction.y) {
+                    ghostBishop.x += direction.x;
+                    ghostBishop.y += direction.y;
+
+                    if (board[ghostBishop.y][ghostBishop.x] != null) {
+                        return false;
+                    }
+                }
+
+                if (board[cell.y][cell.x] != null) {
+                    board[cell.y][cell.x].kill();
+                }
+
+                return true;
+            }
+
+            case ROOK -> {
+                Point ghostRook = new Point(currentPosition.x, currentPosition.y);
+                Point direction = straightMove(cell);
+
+                if (direction.x == 0 && direction.y == 0) {
+                    return false;
+                }
+//                System.out.printf("%b\n", cell.x - currentPosition.x == cell.y - currentPosition.y ||
+//                        cell.x + currentPosition.x == cell.y - currentPosition.y ||
+//                        cell.x + currentPosition.x == cell.y + currentPosition.y ||
+//                        cell.x - currentPosition.x == cell.y + currentPosition.y);
 //
-//                Point ghostBishop = new Point();
+//                System.out.println("cell.x: " + cell.x + " cell.y: " + cell.y + "\ncurr.x: " + currentPosition.x + " curr.y: " + currentPosition.y);
 //
-//                for (Point direction : directions) {
-//                    ghostBishop
-//                    if () {
-//
-//                    }
-//                }
-//            }
+//                System.out.println("x: " + direction.x + " y: " + direction.y);
+
+                while (ghostRook.x != cell.x - direction.x || ghostRook.y != cell.y - direction.y) {
+                    ghostRook.x += direction.x;
+                    ghostRook.y += direction.y;
+
+                    if (board[ghostRook.y][ghostRook.x] != null) {
+                        return false;
+                    }
+                }
+
+                if (board[cell.y][cell.x] != null) {
+                    board[cell.y][cell.x].kill();
+                }
+
+                return true;
+            }
+
+            case QUEEN -> {
+                Point ghostQueen = new Point(currentPosition.x, currentPosition.y);
+                Point direction = straightMove(cell);
+                if (direction.x == 0 && direction.y == 0) {
+                    direction = diagonalMove(cell);
+                    if (direction.x == 0 && direction.y == 0) {
+                        return false;
+                    }
+                }
+
+                while (ghostQueen.x != cell.x - direction.x || ghostQueen.y != cell.y - direction.y) {
+                    ghostQueen.x += direction.x;
+                    ghostQueen.y += direction.y;
+
+                    if (board[ghostQueen.y][ghostQueen.x] != null) {
+                        return false;
+                    }
+                }
+
+                if (board[cell.y][cell.x] != null) {
+                    board[cell.y][cell.x].kill();
+                }
+
+                return true;
+            }
+
+            case KING -> {
+                Point direction = straightMove(cell);
+                if (direction.x == 0 && direction.y == 0) {
+                    direction = diagonalMove(cell);
+                    if (direction.x == 0 && direction.y == 0) {
+                        return false;
+                    }
+                }
+
+                if (currentPosition.x + direction.x == cell.x && currentPosition.y + direction.y == cell.y) {
+                    if (board[cell.y][cell.x] != null) {
+                        board[cell.y][cell.x].kill();
+                    }
+                    return true;
+                }
+            }
         }
 
         return false;
