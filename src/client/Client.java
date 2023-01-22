@@ -1,5 +1,10 @@
-package client;// A simple Client Server Protocol .. Client for Echo Server
+package client;
+
+import gameUtils.*;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -17,10 +22,9 @@ public class Client {
 
         try {
             socket = new Socket(address, 4445);
-            is = new Scanner(socket.getInputStream());
+            is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             os = new PrintWriter(socket.getOutputStream());
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             System.err.print("IO Exception");
             System.exit(-1);
@@ -29,23 +33,19 @@ public class Client {
         System.out.println("Client Address : " + address);
         System.out.println("Enter Data to echo Server ( Enter QUIT to end):");
 
-        String response;
-        try{
-            while (true) {
-                line = scanner.nextLine();
-                os.println(line);
-                os.flush();
-                if (line.equals("QUIT"))
-                    break;
-                response = is.nextLine();
-                System.out.println("Server Response : " + response);
-            }
+        String colorName = is.readLine();
+        PlayerColor color = colorName.equals("WHITE") ? PlayerColor.WHITE : PlayerColor.BLACK;
+        game = new Game(color);
+        game.initGame();
+        System.out.println("I am color " + color);
+
+        if (color == PlayerColor.BLACK) {
+            receiveMove();
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Socket read Error");
-        }
-        finally {
+    }
+
+    public static void endCommunication() {
+        try {
             is.close();
             os.close();
             scanner.close();

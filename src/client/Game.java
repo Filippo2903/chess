@@ -7,9 +7,6 @@ import gameUtils.PlayerColor;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
@@ -28,17 +25,31 @@ public class Game {
     // Todo colore deciso dal server
     private final PlayerColor myColor = PlayerColor.BLACK;
 
-    // TODO dopo
-    Function<Move, Boolean> canMove = move -> {return true;};
+    private static Piece[][] board;
+
+    public Game(PlayerColor color) {
+        myColor = color;
+    }
 
     private void initWindow() {
         window.setTitle("Chess");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(new Dimension(DIM_WINDOW + 19, DIM_WINDOW + 39));
+
+        Image icon = null;
+        try {
+            icon = ImageIO.read(Objects.requireNonNull(Game.class.getResource("assets/icon.png")));
+        } catch (IOException e) {
+            System.err.println("File not found");
+            System.exit(-1);
+        }
+
+        window.setIconImage(icon);
+
+        window.setBackground(Color.RED);
         window.setLayout(null);
         window.setResizable(false);
         window.setVisible(true);
-//        window.setBackground(Color.red);
     }
 
     private void initChessboard() {
@@ -80,21 +91,17 @@ public class Game {
         Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
         Arrays.stream(board).forEach(cell -> Arrays.fill(cell, null));
 
-        // TODO una variabile per ogni pezzo
         Piece piece;
-
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
                 // Add pieces
                 piece = new Piece(CELL_SIZE, startRow[x], playerColor);
                 piece.setPosition(x, playerColor == myColor ? 7 : 0);
-                board[playerColor == myColor ? 7 : 0][x] = piece;
                 chessboardPanel.add(piece);
 
                 // Add pawns
                 piece = new Piece(CELL_SIZE, PieceType.PAWN, playerColor);
                 piece.setPosition(x, playerColor == myColor ? 6 : 1);
-                board[playerColor == myColor ? 6 : 1][x] = piece;
                 chessboardPanel.add(piece);
             }
         }

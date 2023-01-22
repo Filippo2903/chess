@@ -1,7 +1,7 @@
 package gameUtils;
 
 public enum PieceType {
-    PAWN("", 1),
+    PAWN("P", 1),
     KNIGHT("N", 3),
     BISHOP("B", 3),
     ROOK("R", 5),

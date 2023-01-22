@@ -16,10 +16,10 @@ public class Piece extends JLabel {
     private PieceType type;
 
     private final Point newPosition = new Point();
-    private final Point prevPosition = new Point();
+    private final Point currentPosition = new Point(-1, -1);
     private final int cellSize;
 
-    public Piece(int cellSize, PieceType type, PlayerColor playerColor) {//, Function<Piece, Boolean> canMove) {
+    public Piece(int cellSize, PieceType type, PlayerColor playerColor) {
         super();
 
         this.cellSize = cellSize;
@@ -33,6 +33,7 @@ public class Piece extends JLabel {
         String typeName = this.type.toString().toLowerCase();
 
         String path = "assets/" + colorName + typeName.substring(0, 1).toUpperCase() + typeName.substring(1) + ".png";
+
         BufferedImage icon = null;
 
         try {
@@ -55,17 +56,17 @@ public class Piece extends JLabel {
                     undo = false;
                     piece.getParent().setComponentZOrder(piece, 0);
 
-                    Piece.this.prevPosition.x =
+                    Piece.this.currentPosition.x =
                             (piece.getLocation().x + e.getX() - (cellSize >> 1)  + (cellSize >> 1)) / cellSize;
-                    Piece.this.prevPosition.y =
+                    Piece.this.currentPosition.y =
                             (piece.getLocation().y + e.getY() - (cellSize >> 1)  + (cellSize >> 1)) / cellSize;
                 }
                 else {
                     undo = true;
 
                     Piece.this.setPosition(
-                            Piece.this.prevPosition.x,
-                            Piece.this.prevPosition.y
+                            Piece.this.currentPosition.x,
+                            Piece.this.currentPosition.y
                     );
                 }
             }
@@ -81,8 +82,8 @@ public class Piece extends JLabel {
                     undo = true;
 
                     Piece.this.setPosition(
-                            Piece.this.prevPosition.x,
-                            Piece.this.prevPosition.y
+                            Piece.this.currentPosition.x,
+                            Piece.this.currentPosition.y
                     );
                 }
 
@@ -96,10 +97,24 @@ public class Piece extends JLabel {
             public void mouseReleased(MouseEvent e) {
                 if (undo) return;
 
-                int x = (Piece.this.newPosition.x + (cellSize >> 1)) / cellSize;
-                int y = (Piece.this.newPosition.y + (cellSize >> 1)) / cellSize;
+                Point to = new Point();
 
-                Piece.this.setPosition(x, y);
+                to.x = (Piece.this.newPosition.x + (cellSize >> 1)) / cellSize;
+                to.y = (Piece.this.newPosition.y + (cellSize >> 1)) / cellSize;
+
+                if (canMove(to)) {
+//                    Point pos = currentPosition;
+                    Client.sendMove(new Packet(currentPosition, to));
+                    Piece.this.setPosition(to.x, to.y );
+                    Client.receiveMove();
+                    return;
+                }
+
+                // Modify the position
+                Piece.this.setPosition(
+                        Piece.this.currentPosition.x,
+                        Piece.this.currentPosition.y
+                );
             }
         };
 
@@ -108,10 +123,21 @@ public class Piece extends JLabel {
     }
 
     public void setPosition(int x, int y) {
-        this.prevPosition.x = x;
-        this.prevPosition.y = y;
+        if (x == currentPosition.x && y == currentPosition.y) {
+            this.setBounds(x * cellSize, y * cellSize, cellSize, cellSize);
+            return;
+        }
+
+        if (currentPosition.x != -1 && currentPosition.y != -1) {
+            Game.editBoardCell(currentPosition, null);
+        }
+
+        currentPosition.x = x;
+        currentPosition.y = y;
 
         this.setBounds(x * cellSize, y * cellSize, cellSize, cellSize);
+
+        Game.editBoardCell(currentPosition, this);
     }
 
     public void promote(PieceType promotion) throws IllegalArgumentException{
