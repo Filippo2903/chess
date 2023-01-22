@@ -23,7 +23,7 @@ public class Client {
         try {
             socket = new Socket(address, 4445);
             is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            os = new PrintWriter(socket.getOutputStream());
+            os = new PrintWriter(socket.getOutputStream(), true);
         } catch (IOException e) {
             e.printStackTrace();
             System.err.print("IO Exception");
@@ -37,7 +37,7 @@ public class Client {
         PlayerColor color = colorName.equals("WHITE") ? PlayerColor.WHITE : PlayerColor.BLACK;
         game = new Game(color);
         game.initGame();
-        System.out.println("I am color " + color);
+        System.out.println(color);
 
         if (color == PlayerColor.BLACK) {
             receiveMove();

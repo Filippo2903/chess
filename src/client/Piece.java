@@ -103,10 +103,17 @@ public class Piece extends JLabel {
                 to.y = (Piece.this.newPosition.y + (cellSize >> 1)) / cellSize;
 
                 if (canMove(to)) {
-//                    Point pos = currentPosition;
-                    Client.sendMove(new Packet(currentPosition, to));
-                    Piece.this.setPosition(to.x, to.y );
-                    Client.receiveMove();
+                    Point prevPosition = new Point(currentPosition.x, currentPosition.y);
+
+                    Piece.this.setPosition(to.x, to.y);
+
+                    Client.sendMove(new Packet(prevPosition, currentPosition));
+
+                    Thread recieveThread = new Thread(Client::receiveMove);
+                    recieveThread.start();
+
+                    Game.changePlayerTurn();
+
                     return;
                 }
 
