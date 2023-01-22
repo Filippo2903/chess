@@ -1,34 +1,62 @@
 package client;
 
-import gameUtils.*;
+import gameUtils.Packet;
+import gameUtils.PieceType;
+import gameUtils.PlayerColor;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
 
 public class Game {
-    private final int DIM_WINDOW = 500,
+    private static PlayerColor myColor;
+    private static Piece[][] board;    private final int DIM_WINDOW = 500,
             DIM_CHESSBOARD = 8,
             MARGIN = DIM_WINDOW / (4 * DIM_CHESSBOARD + 2), // CELL_SIZE / 4
             CELL_SIZE = (DIM_WINDOW - MARGIN * 2) / DIM_CHESSBOARD;
-
+    private static PlayerColor playerTurn;
     private final JFrame window = new JFrame();
     private JPanel chessboardPanel;
-
-    private static PlayerColor myColor;
-
-    private static Piece[][] board;
-
-    private static PlayerColor playerTurn;
-
     public Game(PlayerColor color) {
         myColor = color;
 
         playerTurn = PlayerColor.WHITE;
+    }
+
+    public static Piece[][] getBoard() {
+        return board;
+    }
+
+    public static void editBoardCell(Point cell, Piece value) {
+        board[cell.y][cell.x] = value;
+    }
+
+    public static PlayerColor getPlayerColor() {
+        return myColor;
+    }
+
+    public static PlayerColor getPlayerTurn() {
+        return playerTurn;
+    }
+
+    public static void changePlayerTurn() {
+        playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+    }
+
+    public static void enemyMove(Packet packet) {
+        Piece piece = board[packet.from.y][packet.from.x];
+        board[packet.from.y][packet.from.x] = null;
+
+        Piece pieceTo = board[packet.to.y][packet.to.x];
+        if (pieceTo != null)
+            pieceTo.kill();
+        board[packet.to.y][packet.to.x] = piece;
+
+        piece.setPosition(packet.to.x, packet.to.y);
+
+        changePlayerTurn();
     }
 
     private void initWindow() {
@@ -36,13 +64,7 @@ public class Game {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(new Dimension(DIM_WINDOW + 19, DIM_WINDOW + 39));
 
-        Image icon = null;
-        try {
-            icon = ImageIO.read(Objects.requireNonNull(Game.class.getResource("assets/icon.png")));
-        } catch (IOException e) {
-            System.err.println("File not found");
-            System.exit(-1);
-        }
+        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("assets/icon.png"))).getImage();
 
         window.setIconImage(icon);
 
@@ -54,7 +76,7 @@ public class Game {
 
     private void initChessboard() {
         final Color BLACK_CELL = new Color(0xFFEFD5),
-                    WHITE_CELL = new Color(0x654321);
+                WHITE_CELL = new Color(0x654321);
 
         chessboardPanel = new JPanel() {
             @Override
@@ -84,8 +106,8 @@ public class Game {
 
     private void initPieces() {
         final PieceType[] startRow = {
-            PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN,
-            PieceType.KING, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK
+                PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN,
+                PieceType.KING, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK
         };
 
         board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
@@ -115,35 +137,7 @@ public class Game {
         initPieces();
     }
 
-    public static Piece[][] getBoard() {
-        return board;
-    }
 
-    public static void editBoardCell(Point cell, Piece value) {
-        board[cell.y][cell.x] = value;
-    }
 
-    public static PlayerColor getPlayerColor() {
-        return myColor;
-    }
-    public static PlayerColor getPlayerTurn() {
-        return playerTurn;
-    }
-    public static void changePlayerTurn() {
-        playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
-    }
 
-    public static void enemyMove(Packet packet) {
-        Piece piece = board[packet.from.y][packet.from.x];
-        board[packet.from.y][packet.from.x] = null;
-
-        Piece pieceTo = board[packet.to.y][packet.to.x];
-        if (pieceTo != null)
-            pieceTo.kill();
-        board[packet.to.y][packet.to.x] = piece;
-
-        piece.setPosition(packet.to.x, packet.to.y);
-
-        changePlayerTurn();
-    }
 }

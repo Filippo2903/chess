@@ -43,7 +43,6 @@ public class Server {
             boolean playing = true;
 
             if (colorPlayerTwo == PlayerColor.WHITE) {
-                System.out.println("Sivalletto(?)");
                 playing = server.send(inputPlayerTwo, outputPlayerOne);
             }
             while (playing) {

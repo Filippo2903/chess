@@ -4,7 +4,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.Base64;
 
-public class Packet implements Serializable{
+public class Packet implements Serializable {
     public final Point from;
     public final Point to;
 

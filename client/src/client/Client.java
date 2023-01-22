@@ -33,7 +33,7 @@ public class Client {
             System.exit(-1);
         }
 
-        Packet packet = null;
+    Packet packet = null;
         try {
             packet = Packet.fromString(response);
         } catch (Exception e) {
@@ -45,6 +45,8 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
+        System.out.println("Starting client...");
+
         InetAddress address = InetAddress.getLocalHost();
 
         Game game;

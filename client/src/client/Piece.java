@@ -286,14 +286,6 @@ public class Piece extends JLabel {
                 if (direction.x == 0 && direction.y == 0) {
                     return false;
                 }
-//                System.out.printf("%b\n", cell.x - currentPosition.x == cell.y - currentPosition.y ||
-//                        cell.x + currentPosition.x == cell.y - currentPosition.y ||
-//                        cell.x + currentPosition.x == cell.y + currentPosition.y ||
-//                        cell.x - currentPosition.x == cell.y + currentPosition.y);
-//
-//                System.out.println("cell.x: " + cell.x + " cell.y: " + cell.y + "\ncurr.x: " + currentPosition.x + " curr.y: " + currentPosition.y);
-//
-//                System.out.println("x: " + direction.x + " y: " + direction.y);
 
                 while (ghostRook.x != cell.x - direction.x || ghostRook.y != cell.y - direction.y) {
                     ghostRook.x += direction.x;
