@@ -34,11 +34,12 @@ public class Game {
     public static PlayerColor getPlayerColor() {
         return myColor;
     }
-
     public static PlayerColor getPlayerTurn() {
         return playerTurn;
     }
-
+    public static Piece[][] getBoard() {
+        return board;
+    }
     public static void changePlayerTurn() {
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
@@ -85,9 +86,14 @@ public class Game {
         // Move the piece
         piece.setPosition(packet.to.x, packet.to.y);
 
+        // Change the player turn
         changePlayerTurn();
     }
 
+
+    /**
+     * Init the main window
+     */
     private void initWindow() {
         window.setTitle("Chess");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -103,6 +109,9 @@ public class Game {
         window.setVisible(true);
     }
 
+    /**
+     * Draw the chessboard in the UI
+     */
     private void initChessboard() {
         final Color BLACK_CELL = new Color(0xFFEFD5),
                     WHITE_CELL = new Color(0x654321);
@@ -131,10 +140,18 @@ public class Game {
         chessboardPanel.setBorder(BorderFactory.createLineBorder(Color.black, 2));
         chessboardPanel.setLayout(null);
 
+        // Add the panel to the frame
         window.add(chessboardPanel);
     }
 
+
+    /**
+     * Draw the pieces to the UI and initialize the board
+     */
     private void initPieces() {
+
+        /* Paint all the pieces in the board */
+
         final PieceType[] startRow = {
                 PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN,
                 PieceType.KING, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK
@@ -149,20 +166,25 @@ public class Game {
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
                 // Add pieces
-                piece = new Piece(CELL_SIZE, startRow[x], playerColor);
+                piece = new Piece(startRow[x], playerColor);
                 piece.setPosition(x, playerColor == myColor ? 7 : 0);
                 chessboardPanel.add(piece);
 
                 // Add pawns
-                piece = new Piece(CELL_SIZE, PieceType.PAWN, playerColor);
+                piece = new Piece(PieceType.PAWN, playerColor);
                 piece.setPosition(x, playerColor == myColor ? 6 : 1);
                 chessboardPanel.add(piece);
             }
         }
 
+        // Repaint to apply changes
         window.repaint();
     }
 
+
+    /**
+     * Start the game
+     */
     public void initGame() {
         initWindow();
         initChessboard();

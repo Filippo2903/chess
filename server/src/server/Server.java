@@ -2,6 +2,7 @@ package server;
 
 import gameUtils.Packet;
 import gameUtils.PlayerColor;
+import modal.ErrorPopup;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -73,7 +74,7 @@ public class Server {
                 inputPlayerTwo = new Scanner(clientPlayerTwo.getInputStream());
                 outputPlayerTwo = new PrintWriter(clientPlayerTwo.getOutputStream(), true);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                ErrorPopup.show(301);
             }
 
             outputPlayerOne.println(colorPlayerOne);
@@ -82,6 +83,7 @@ public class Server {
 
         public boolean send(Scanner sender, PrintWriter receiver) {
             String serializedMove;
+
             // Read from sender client
             serializedMove = sender.nextLine();
 
@@ -89,7 +91,7 @@ public class Server {
             try {
                 packet = Packet.fromString(serializedMove);
             } catch (Exception e) {
-                System.err.println("Error serializing the packet");
+                ErrorPopup.show(203);
                 System.exit(-1);
             }
 
@@ -99,7 +101,7 @@ public class Server {
             try {
                 serializedMove = packet.serializeToString();
             } catch (IOException e) {
-                System.err.println("Error serializing the packet");
+                ErrorPopup.show(204);
                 System.exit(-1);
             }
 
