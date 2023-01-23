@@ -9,28 +9,26 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.Objects;
 
-
 public class Game {
     private static PlayerColor myColor;
-    private static Piece[][] board;    private final int DIM_WINDOW = 500,
-            DIM_CHESSBOARD = 8,
-            MARGIN = DIM_WINDOW / (4 * DIM_CHESSBOARD + 2), // CELL_SIZE / 4
-            CELL_SIZE = (DIM_WINDOW - MARGIN * 2) / DIM_CHESSBOARD;
     private static PlayerColor playerTurn;
+
+    private static final int DIM_WINDOW = 500;
+    private static final int DIM_CHESSBOARD = 8;
+    private static final int MARGIN = DIM_WINDOW / (4 * DIM_CHESSBOARD + 2);
+    private static final int CELL_SIZE = (DIM_WINDOW - MARGIN * 2) / DIM_CHESSBOARD;
+
+    // The board where all the pieces will be stored
+    private static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
+
     private final JFrame window = new JFrame();
+
     private JPanel chessboardPanel;
+
     public Game(PlayerColor color) {
         myColor = color;
 
         playerTurn = PlayerColor.WHITE;
-    }
-
-    public static Piece[][] getBoard() {
-        return board;
-    }
-
-    public static void editBoardCell(Point cell, Piece value) {
-        board[cell.y][cell.x] = value;
     }
 
     public static PlayerColor getPlayerColor() {
@@ -45,15 +43,46 @@ public class Game {
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
 
-    public static void enemyMove(Packet packet) {
+
+    /**
+     * Edit a cell of the board data
+     * @param cell Cell to edit
+     * @param value Value to assign to the cell
+     */
+    public static void editBoardCell(Point cell, Piece value) {
+        board[cell.y][cell.x] = value;
+    }
+
+
+    /**
+     * Move the enemy piece
+     * @param packet Packet to get data from
+     */
+    public void enemyMove(Packet packet) {
         Piece piece = board[packet.from.y][packet.from.x];
-        board[packet.from.y][packet.from.x] = null;
 
+        // Delete previous position
+        editBoardCell(packet.from, null);
+
+        // If the target cell is a piece, kill it
         Piece pieceTo = board[packet.to.y][packet.to.x];
-        if (pieceTo != null)
+        if (pieceTo != null) {
             pieceTo.kill();
-        board[packet.to.y][packet.to.x] = piece;
+        }
 
+        if (packet.type != null) {
+            piece.kill();
+
+            piece = new Piece(PieceType.QUEEN, myColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE);
+
+            chessboardPanel.add(piece);
+            chessboardPanel.repaint();
+        }
+
+        // Place the piece in the new position
+        editBoardCell(packet.to, piece);
+
+        // Move the piece
         piece.setPosition(packet.to.x, packet.to.y);
 
         changePlayerTurn();
@@ -76,8 +105,9 @@ public class Game {
 
     private void initChessboard() {
         final Color BLACK_CELL = new Color(0xFFEFD5),
-                WHITE_CELL = new Color(0x654321);
+                    WHITE_CELL = new Color(0x654321);
 
+        // Create and paint the background of the panel that will contain the chessboard
         chessboardPanel = new JPanel() {
             @Override
             public void paintComponent(Graphics g) {
@@ -110,9 +140,11 @@ public class Game {
                 PieceType.KING, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK
         };
 
-        board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
+        // Set cell size and fill the board
+        Piece.setCellSize(CELL_SIZE);
         Arrays.stream(board).forEach(cell -> Arrays.fill(cell, null));
 
+        // Create, paint and store every piece in the chessboard
         Piece piece;
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
@@ -136,8 +168,4 @@ public class Game {
         initChessboard();
         initPieces();
     }
-
-
-
-
 }

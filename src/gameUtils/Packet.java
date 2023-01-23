@@ -5,18 +5,39 @@ import java.io.*;
 import java.util.Base64;
 
 public class Packet implements Serializable {
+    // Starting position
     public final Point from;
     public final Point to;
 
+    public final PieceType type;
+
     public final boolean endGame;
 
+    /**
+     * @param from Starting position of the piece
+     * @param to Arrival position of the piece
+     */
     public Packet(Point from, Point to) {
-        this(from, to, true);
+        this(from, to, null, true);
     }
 
-    public Packet(Point from, Point to, boolean endGame) {
+    /**
+     * @param from Starting position of the piece
+     * @param to Arrival position of the piece
+     */
+    public Packet(Point from, Point to, PieceType type) {
+        this(from, to, type, true);
+    }
+
+    /**
+     * @param from Starting position of the piece
+     * @param to Arrival position of the piece
+     * @param endGame Is game over?
+     */
+    public Packet(Point from, Point to, PieceType type, boolean endGame) {
         this.from = from;
         this.to = to;
+        this.type = type;
 
         this.endGame = endGame;
     }

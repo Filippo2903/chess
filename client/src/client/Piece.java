@@ -1,6 +1,9 @@
 package client;
 
-import gameUtils.*;
+import gameUtils.Packet;
+import gameUtils.PieceType;
+import gameUtils.PlayerColor;
+import modal.ErrorPopup;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -9,20 +12,23 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class Piece extends JLabel {
     private PieceType type;
     private final PlayerColor pieceColor;
+    private boolean promoted = false;
 
     private final Point newPosition = new Point();
     private final Point currentPosition = new Point(-1, -1);
-    private final int cellSize;
 
-    public Piece(int cellSize, PieceType type, PlayerColor playerColor) {
+    // Label cell size
+    private static int cellSize;
+
+    public Piece(PieceType type, PlayerColor playerColor) {
         super();
 
-        this.cellSize = cellSize;
         this.type = type;
         this.pieceColor = playerColor;
 
@@ -39,7 +45,7 @@ public class Piece extends JLabel {
         try {
             icon = ImageIO.read(Objects.requireNonNull(Piece.class.getResource(path)));
         } catch (IOException e) {
-            System.err.println("File not found");
+            ErrorPopup.show(300);
             System.exit(-1);
         }
 
@@ -97,17 +103,21 @@ public class Piece extends JLabel {
             public void mouseReleased(MouseEvent e) {
                 if (undo) return;
 
-                Point to = new Point();
-
-                to.x = (Piece.this.newPosition.x + (cellSize >> 1)) / cellSize;
-                to.y = (Piece.this.newPosition.y + (cellSize >> 1)) / cellSize;
+                Point to = new Point(
+                        (Piece.this.newPosition.x + (cellSize >> 1)) / cellSize,
+                        (Piece.this.newPosition.y + (cellSize >> 1)) / cellSize
+                );
 
                 if (canMove(to)) {
                     Point prevPosition = new Point(currentPosition.x, currentPosition.y);
 
                     Piece.this.setPosition(to.x, to.y);
 
-                    Client.sendMove(new Packet(prevPosition, currentPosition));
+                    if (promoted) {
+                        Client.sendMove(new Packet(prevPosition, currentPosition, type));
+                    } else {
+                        Client.sendMove(new Packet(prevPosition, currentPosition));
+                    }
 
                     Thread recieveThread = new Thread(Client::receiveMove);
                     recieveThread.start();
@@ -159,10 +169,11 @@ public class Piece extends JLabel {
     }
 
     public boolean canMove(Point cell) {
+        Piece[][] board = Game.getBoard();
+
         if (Game.getPlayerTurn() != Game.getPlayerColor())
             return false;
 
-        Piece[][] board = Game.getBoard();
 
         // If is not the turn of the player turn
         if (this.getColor() != Game.getPlayerColor()) {
@@ -176,6 +187,7 @@ public class Piece extends JLabel {
 
         switch (this.getType()) {
             case PAWN -> {
+                boolean can = false;
                 int startPositionY = 6;
                 int enPassantPositionY = 3;
 
@@ -192,7 +204,7 @@ public class Piece extends JLabel {
                             board[cell.y][cell.x] != null) {
 
                         board[cell.y][cell.x].kill();
-                        return true;
+                        can = true;
                     }
                 }
 
@@ -204,7 +216,7 @@ public class Piece extends JLabel {
                         currentPosition.y == enPassantPositionY) {
 
                         board[cell.y + 1][cell.x].kill();
-                        return true;
+                        can = true;
                     }
                 }
 
@@ -215,14 +227,21 @@ public class Piece extends JLabel {
 
                 // Standard move
                 if (cell.x == currentPosition.x + standardMove.x && cell.y == currentPosition.y + standardMove.y) {
-                    return true;
+                    can = true;
                 }
 
                 // Double move
                 if (cell.x == currentPosition.x + doubleMove.x && cell.y == currentPosition.y + doubleMove.y &&
                     currentPosition.y == startPositionY) {
-                    return true;
+                    can = true;
                 }
+
+                // Promote
+                if (can && cell.y == 0) {
+                    this.promote(PieceType.QUEEN, cell);
+                }
+
+                return can;
             }
 
             case KNIGHT -> {
@@ -368,15 +387,35 @@ public class Piece extends JLabel {
         Game.editBoardCell(currentPosition, this);
     }
 
-    public void promote(PieceType promotion) throws IllegalArgumentException{
+    public void promote(PieceType promotion, Point promotedCell) throws IllegalArgumentException{
         if (type != PieceType.PAWN || promotion == PieceType.KING || promotion == PieceType.PAWN)
             throw new IllegalArgumentException("Cannot promote " + type.toString().toLowerCase());
+
         type = promotion;
+
+        Container chessboardPanel = this.getParent();
+
+        this.kill();
+
+        Piece piece = new Piece(PieceType.QUEEN, Game.getPlayerColor());
+        piece.setPosition(promotedCell.x, promotedCell.y);
+
+        Piece[][] board = Game.getBoard();
+        board[promotedCell.y][promotedCell.x] = piece;
+
+        chessboardPanel.add(piece);
+        chessboardPanel.repaint();
+
+        promoted = true;
     }
 
     public void kill() {
-        Game.getBoard()[currentPosition.y][currentPosition.x] = null;
-        this.getParent().remove(this);
+        Piece[][] board = Game.getBoard();
+        board[currentPosition.y][currentPosition.x] = null;
+
+        Container chessboardPanel = this.getParent();
+        chessboardPanel.remove(this);
+        chessboardPanel.repaint();
     }
 
     public PieceType getType() {
@@ -384,5 +423,8 @@ public class Piece extends JLabel {
     }
     public PlayerColor getColor() {
         return pieceColor;
+    }
+    public static void setCellSize(int cellSize) {
+        Piece.cellSize = cellSize;
     }
 }
