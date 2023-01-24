@@ -2,6 +2,7 @@ package client;
 
 import gameUtils.*;
 import modal.ErrorPopup;
+import modal.Theme;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -54,15 +55,9 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
-        System.out.println("Starting client...");
+        Theme.setTheme();
 
-        // Set native windows look and feel
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                 UnsupportedLookAndFeelException e) {
-            ErrorPopup.show(1);
-        }
+        System.out.println("Starting client...");
 
         InetAddress address = InetAddress.getLocalHost();
 

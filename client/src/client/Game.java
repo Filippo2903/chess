@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Game {
-    private static PlayerColor myColor;
+    private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
 
     private static final int DIM_WINDOW = 500;
@@ -25,14 +25,11 @@ public class Game {
 
     private JPanel chessboardPanel;
 
-    public Game(PlayerColor color) {
-        myColor = color;
-
-        playerTurn = PlayerColor.WHITE;
+    public Game() {
     }
 
     public static PlayerColor getPlayerColor() {
-        return myColor;
+        return clientColor;
     }
     public static PlayerColor getPlayerTurn() {
         return playerTurn;
@@ -93,7 +90,7 @@ public class Game {
     /**
      * Init the main window
      */
-    private void initWindow() {
+    private void displayWindow() {
         window.setTitle("Chess");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(new Dimension(DIM_WINDOW + 19, DIM_WINDOW + 39));
@@ -124,9 +121,9 @@ public class Game {
                 for (int i = 0; i < DIM_CHESSBOARD; i++) {
                     for (int j = 0; j < DIM_CHESSBOARD; j++) {
                         if ((i + j) % 2 == 0) {
-                            g.setColor(myColor == PlayerColor.WHITE ? BLACK_CELL : WHITE_CELL);
+                            g.setColor(clientColor == PlayerColor.WHITE ? BLACK_CELL : WHITE_CELL);
                         } else {
-                            g.setColor(myColor == PlayerColor.WHITE ? WHITE_CELL : BLACK_CELL);
+                            g.setColor(clientColor == PlayerColor.WHITE ? WHITE_CELL : BLACK_CELL);
                         }
                         g.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                     }
@@ -166,12 +163,12 @@ public class Game {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
                 // Add pieces
                 piece = new Piece(startRow[x], playerColor);
-                piece.setPosition(x, playerColor == myColor ? 7 : 0);
+                piece.setPosition(x, playerColor == clientColor ? 7 : 0);
                 chessboardPanel.add(piece);
 
                 // Add pawns
                 piece = new Piece(PieceType.PAWN, playerColor);
-                piece.setPosition(x, playerColor == myColor ? 6 : 1);
+                piece.setPosition(x, playerColor == clientColor ? 6 : 1);
                 chessboardPanel.add(piece);
 
                 chessboardPanel.repaint();
@@ -184,11 +181,36 @@ public class Game {
 
 
     /**
-     * Start the game
+     * Draws the chessboard inside the window
      */
-    public void initGame() {
-        initWindow();
+    private void drawBoard() {
+        if (chessboardPanel != null)
+            window.remove(chessboardPanel);
+
+        chessboardPanel = new JPanel();
         initChessboard();
         initPieces();
+
+        chessboardPanel.repaint();
+    }
+
+
+    /**
+     * Displays the window and paints the board
+     */
+    public void startWindow() {
+        displayWindow();
+        drawBoard();
+    }
+
+
+    /**
+     * Start the game
+     */
+    public void startGame(PlayerColor clientColor) {
+        Game.clientColor = clientColor;
+        playerTurn = PlayerColor.WHITE;
+
+        drawBoard();
     }
 }
