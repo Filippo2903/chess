@@ -1,6 +1,6 @@
 package modal;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
 
 /**
  * Setup
@@ -25,12 +25,12 @@ public class ErrorPopup {
     }
 
     public static void show(String message) {
-        show("Errore", message);
+        show(title, message);
     }
 
     public static void show(int errorCode) {
         if (errorCode > 0 && errorCode < 99) {
-            show(String.format(title, errorCode), String.format(message, errorCode));
+            show(String.format(title + " %d", errorCode), String.format(message, errorCode));
         }
     }
 }

@@ -3,28 +3,25 @@ package client;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
-import modal.ErrorPopup;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class Piece extends JLabel {
     private PieceType type;
     private final PlayerColor pieceColor;
-    private boolean promoted = false;
 
     private final Point newPosition = new Point();
     private final Point currentPosition = new Point(-1, -1);
 
     // Label cell size
     private static int cellSize;
+
+    boolean promoted = false;
 
     public Piece(PieceType type, PlayerColor playerColor) {
         super();
@@ -40,32 +37,18 @@ public class Piece extends JLabel {
 
         String path = "assets/" + colorName + typeName.substring(0, 1).toUpperCase() + typeName.substring(1) + ".png";
 
-        BufferedImage icon = null;
-
-        try {
-            icon = ImageIO.read(Objects.requireNonNull(Piece.class.getResource(path)));
-        } catch (IOException e) {
-            ErrorPopup.show(300);
-            System.exit(-1);
-        }
+        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
 
         this.setIcon(new ImageIcon(icon.getScaledInstance(cellSize, cellSize, Image.SCALE_SMOOTH)));
         this.setVisible(true);
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
-            boolean undo = false;
+            boolean undo;
             @Override
             public void mousePressed(MouseEvent e) {
-                Piece piece = (Piece) e.getSource();
-
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     undo = false;
-                    piece.getParent().setComponentZOrder(piece, 0);
-
-                    Piece.this.currentPosition.x =
-                            (piece.getLocation().x + e.getX() - (cellSize >> 1)  + (cellSize >> 1)) / cellSize;
-                    Piece.this.currentPosition.y =
-                            (piece.getLocation().y + e.getY() - (cellSize >> 1)  + (cellSize >> 1)) / cellSize;
+                    Piece.this.getParent().setComponentZOrder(Piece.this, 0);
                 }
                 else {
                     undo = true;
@@ -93,10 +76,9 @@ public class Piece extends JLabel {
                     );
                 }
 
-                Piece piece = (Piece) e.getSource();
-                Piece.this.newPosition.x = piece.getLocation().x + e.getX() - (cellSize >> 1);
-                Piece.this.newPosition.y = piece.getLocation().y + e.getY() - (cellSize >> 1);
-                piece.setLocation(Piece.this.newPosition.x, Piece.this.newPosition.y);
+                Piece.this.newPosition.x = Piece.this.getLocation().x + e.getX() - (cellSize >> 1);
+                Piece.this.newPosition.y = Piece.this.getLocation().y + e.getY() - (cellSize >> 1);
+                Piece.this.setLocation(Piece.this.newPosition.x, Piece.this.newPosition.y);
             }
 
             @Override
@@ -114,7 +96,7 @@ public class Piece extends JLabel {
                     Piece.this.setPosition(to.x, to.y);
 
                     if (promoted) {
-                        Client.sendMove(new Packet(prevPosition, currentPosition, type));
+                        Client.sendMove(new Packet(prevPosition, currentPosition, Piece.this.getType()));
                     } else {
                         Client.sendMove(new Packet(prevPosition, currentPosition));
                     }
@@ -187,7 +169,7 @@ public class Piece extends JLabel {
 
         switch (this.getType()) {
             case PAWN -> {
-                boolean can = false;
+                boolean canMove = false;
                 int startPositionY = 6;
                 int enPassantPositionY = 3;
 
@@ -204,7 +186,7 @@ public class Piece extends JLabel {
                             board[cell.y][cell.x] != null) {
 
                         board[cell.y][cell.x].kill();
-                        can = true;
+                        canMove = true;
                     }
                 }
 
@@ -216,7 +198,7 @@ public class Piece extends JLabel {
                         currentPosition.y == enPassantPositionY) {
 
                         board[cell.y + 1][cell.x].kill();
-                        can = true;
+                        canMove = true;
                     }
                 }
 
@@ -227,25 +209,25 @@ public class Piece extends JLabel {
 
                 // Standard move
                 if (cell.x == currentPosition.x + standardMove.x && cell.y == currentPosition.y + standardMove.y) {
-                    can = true;
+                    canMove = true;
                 }
 
                 // Double move
                 if (cell.x == currentPosition.x + doubleMove.x && cell.y == currentPosition.y + doubleMove.y &&
                     currentPosition.y == startPositionY) {
-                    can = true;
+                    canMove = true;
                 }
 
                 // Promote
-                if (can && cell.y == 0) {
-                    this.promote(PieceType.QUEEN, cell);
+                if (canMove && cell.y == 0) {
+                    this.promote(PieceType.QUEEN);
                 }
 
-                return can;
+                return canMove;
             }
 
             case KNIGHT -> {
-                boolean can = false;
+                boolean canMove = false;
 
                 Point[] moves = {
                         new Point(-2, -1),
@@ -260,12 +242,12 @@ public class Piece extends JLabel {
 
                 for (Point move : moves) {
                     if (cell.x == currentPosition.x + move.x && cell.y == currentPosition.y + move.y) {
-                        can = true;
+                        canMove = true;
                         break;
                     }
                 }
 
-                if (can) {
+                if (canMove) {
                     if (board[cell.y][cell.x] != null) {
                         board[cell.y][cell.x].kill();
                     }
@@ -371,7 +353,7 @@ public class Piece extends JLabel {
 
     public void setPosition(int x, int y) {
         if (x == currentPosition.x && y == currentPosition.y) {
-            this.setBounds(x * cellSize, y * cellSize, cellSize, cellSize);
+            this.setLocation(x * cellSize, y * cellSize);
             return;
         }
 
@@ -387,31 +369,23 @@ public class Piece extends JLabel {
         Game.editBoardCell(currentPosition, this);
     }
 
-    public void promote(PieceType promotion, Point promotedCell) throws IllegalArgumentException{
+    public void promote(PieceType promotion) throws IllegalArgumentException{
         if (type != PieceType.PAWN || promotion == PieceType.KING || promotion == PieceType.PAWN)
             throw new IllegalArgumentException("Cannot promote " + type.toString().toLowerCase());
 
+        promoted = true;
+
         type = promotion;
 
-        Container chessboardPanel = this.getParent();
+        String path = "assets/" + pieceColor + promotion.toString().substring(0, 1).toUpperCase() + promotion.toString().substring(1) + ".png";
 
-        this.kill();
+        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
 
-        Piece piece = new Piece(PieceType.QUEEN, Game.getPlayerColor());
-        piece.setPosition(promotedCell.x, promotedCell.y);
-
-        Piece[][] board = Game.getBoard();
-        board[promotedCell.y][promotedCell.x] = piece;
-
-        chessboardPanel.add(piece);
-        chessboardPanel.repaint();
-
-        promoted = true;
+        this.setIcon(new ImageIcon(icon.getScaledInstance(cellSize, cellSize, Image.SCALE_SMOOTH)));
     }
 
     public void kill() {
-        Piece[][] board = Game.getBoard();
-        board[currentPosition.y][currentPosition.x] = null;
+        Game.editBoardCell(currentPosition, null);
 
         Container chessboardPanel = this.getParent();
         chessboardPanel.remove(this);

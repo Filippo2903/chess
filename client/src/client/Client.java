@@ -3,7 +3,8 @@ package client;
 import gameUtils.*;
 import modal.ErrorPopup;
 
-import javax.swing.*;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -65,25 +66,35 @@ public class Client {
 
         InetAddress address = InetAddress.getLocalHost();
 
-        // Todo potrebbe essere un thread
-        // Try connecting to the server
-        try {
-            socket = new Socket(address, 4445);
-            is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            os = new PrintWriter(socket.getOutputStream(), true);
-        } catch (IOException e) {
-            ErrorPopup.show("Connessione al server non riuscita\nAssicurati che il server sia avviato");
-            System.exit(-1);
-        }
+        game = new Game();
+        game.startWindow();
 
-        System.out.println("Client Address : " + address);
+
+
+        // Try connecting to the server
+        while (true) {
+            try {
+                socket = new Socket(address, 4445);
+                is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                os = new PrintWriter(socket.getOutputStream(), true);
+
+                break;
+            } catch (IOException e) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException err) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
 
         // Read and set the assigned color to the client
         String colorName = is.readLine();
-
         PlayerColor color = colorName.equals("WHITE") ? PlayerColor.WHITE : PlayerColor.BLACK;
-        game = new Game(color);
-        game.initGame();
+
+        game.startGame(color);
+
+        System.out.println("Client Address : " + address);
 
         System.out.println("Client has color " + color);
 

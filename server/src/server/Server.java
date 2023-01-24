@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Server {
@@ -15,54 +16,50 @@ public class Server {
     private static PrintWriter outputPlayerOne, outputPlayerTwo;
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = null;
-        try {
-            serverSocket = new ServerSocket(4445);
+        Theme.setTheme();
 
-            System.out.println("Server listening...");
+        ServerSocket serverSocket = new ServerSocket(4445);
 
-            Socket clientSocketOne = serverSocket.accept();
-            System.out.println("Player one connected!");
+        System.out.println("Server listening...");
 
-            Socket clientSocketTwo = serverSocket.accept();
-            System.out.println("Player two connected!");
+        Socket clientSocketOne = serverSocket.accept();
+        System.out.println("Player one connected!");
 
-            PlayerColor colorPlayerOne, colorPlayerTwo;
-            if ((int) (Math.random() * 2) == 0) {
-                colorPlayerOne = PlayerColor.WHITE;
-                colorPlayerTwo = PlayerColor.BLACK;
-            } else {
-                colorPlayerOne = PlayerColor.BLACK;
-                colorPlayerTwo = PlayerColor.WHITE;
-            }
+        Socket clientSocketTwo = serverSocket.accept();
+        System.out.println("Player two connected!");
 
-            System.out.println("Assigned color " + colorPlayerOne + " to player one");
-            System.out.println("Assigned color " + colorPlayerTwo + " to player two");
-
-            ClientHandler server = new ClientHandler(clientSocketOne, clientSocketTwo, colorPlayerOne, colorPlayerTwo);
-
-            boolean playing = true;
-
-            if (colorPlayerTwo == PlayerColor.WHITE) {
-                playing = server.send(inputPlayerTwo, outputPlayerOne);
-            }
-            while (playing) {
-                playing = server.send(inputPlayerOne, outputPlayerTwo);
-
-                if (!playing) break;
-
-                playing = server.send(inputPlayerTwo, outputPlayerOne);
-            }
-        } finally {
-            if (serverSocket == null)
-                System.exit(-1);
-
-            serverSocket.close();
-            inputPlayerOne.close();
-            inputPlayerTwo.close();
-            outputPlayerOne.close();
-            outputPlayerTwo.close();
+        PlayerColor colorPlayerOne, colorPlayerTwo;
+        if ((int) (Math.random() * 2) == 0) {
+            colorPlayerOne = PlayerColor.WHITE;
+            colorPlayerTwo = PlayerColor.BLACK;
+        } else {
+            colorPlayerOne = PlayerColor.BLACK;
+            colorPlayerTwo = PlayerColor.WHITE;
         }
+
+        System.out.println("Assigned color " + colorPlayerOne + " to player one");
+        System.out.println("Assigned color " + colorPlayerTwo + " to player two");
+
+        ClientHandler server = new ClientHandler(clientSocketOne, clientSocketTwo, colorPlayerOne, colorPlayerTwo);
+
+        boolean playing = true;
+
+        if (colorPlayerTwo == PlayerColor.WHITE) {
+            playing = server.send(inputPlayerTwo, outputPlayerOne);
+        }
+        while (playing) {
+            playing = server.send(inputPlayerOne, outputPlayerTwo);
+
+            if (!playing) break;
+
+            playing = server.send(inputPlayerTwo, outputPlayerOne);
+        }
+
+        serverSocket.close();
+        inputPlayerOne.close();
+        inputPlayerTwo.close();
+        outputPlayerOne.close();
+        outputPlayerTwo.close();
     }
 
     private static class ClientHandler {
@@ -82,10 +79,15 @@ public class Server {
         }
 
         public boolean send(Scanner sender, PrintWriter receiver) {
-            String serializedMove;
+            String serializedMove = null;
 
-            // Read from sender client
-            serializedMove = sender.nextLine();
+            try {
+                // Read from sender client
+                serializedMove = sender.nextLine();
+            } catch (NoSuchElementException e) {
+                ErrorPopup.show("Client disconnected.");
+                System.exit(-1);
+            }
 
             Packet packet = null;
             try {

@@ -54,7 +54,6 @@ public class Game {
         board[cell.y][cell.x] = value;
     }
 
-
     /**
      * Move the enemy piece
      * @param packet Packet to get data from
@@ -74,8 +73,8 @@ public class Game {
         if (packet.type != null) {
             piece.kill();
 
-            piece = new Piece(PieceType.QUEEN, myColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE);
-
+            piece = new Piece(packet.type, clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE);
+            piece.setPosition(packet.to.x, packet.to.y);
             chessboardPanel.add(piece);
             chessboardPanel.repaint();
         }
@@ -174,6 +173,8 @@ public class Game {
                 piece = new Piece(PieceType.PAWN, playerColor);
                 piece.setPosition(x, playerColor == myColor ? 6 : 1);
                 chessboardPanel.add(piece);
+
+                chessboardPanel.repaint();
             }
         }
 

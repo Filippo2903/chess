@@ -1,7 +1,12 @@
 package gameUtils;
 
 import java.awt.*;
-import java.io.*;
+import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 
 public class Packet implements Serializable {
@@ -11,6 +16,7 @@ public class Packet implements Serializable {
     // Arrival position
     public final Point to;
 
+    // Piece Type
     public final PieceType type;
 
     // Is game over?
@@ -27,6 +33,7 @@ public class Packet implements Serializable {
     /**
      * @param from Starting position of the piece
      * @param to Arrival position of the piece
+     * @param type Type of the piece
      */
     public Packet(Point from, Point to, PieceType type) {
         this(from, to, type, true);
@@ -35,6 +42,7 @@ public class Packet implements Serializable {
     /**
      * @param from Starting position of the piece
      * @param to Arrival position of the piece
+     * @param type Type of the piece
      * @param endGame Is game over?
      */
     public Packet(Point from, Point to, PieceType type, boolean endGame) {
