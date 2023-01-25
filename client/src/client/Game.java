@@ -4,6 +4,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
+import themes.CustomTheme;
 
 import javax.swing.*;
 import java.awt.*;
