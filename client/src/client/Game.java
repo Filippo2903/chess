@@ -1,5 +1,6 @@
 package client;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
@@ -13,10 +14,10 @@ public class Game {
     private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
 
-    private static final int DIM_WINDOW = 500;
+    private static final int DIM_WINDOW_X = 500, DIM_WINDOW_Y = 570;
     private static final int DIM_CHESSBOARD = 8;
-    private static final int MARGIN = DIM_WINDOW / (4 * DIM_CHESSBOARD + 2);
-    private static final int CELL_SIZE = (DIM_WINDOW - MARGIN * 2) / DIM_CHESSBOARD;
+    private static final int MARGIN = DIM_WINDOW_X / (4 * DIM_CHESSBOARD + 2);
+    private static final int CELL_SIZE = (DIM_WINDOW_X - MARGIN * 2) / DIM_CHESSBOARD;
 
     // The board where all the pieces will be stored
     private static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
@@ -86,14 +87,38 @@ public class Game {
         changePlayerTurn();
     }
 
+    private void initPlayButton() {
+        final int DIM_BUTTON_X = DIM_WINDOW_X / 2, DIM_BUTTON_Y = DIM_WINDOW_Y - (CELL_SIZE * DIM_CHESSBOARD + MARGIN * 3);
+
+        CustomTheme.setup();
+
+        JButton playButton = new JButton("Play");
+        playButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 38));
+        playButton.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
+
+        playButton.setBounds(
+                DIM_WINDOW_X / 2 - DIM_BUTTON_X / 2,
+                CELL_SIZE * DIM_CHESSBOARD + MARGIN * 2,
+                DIM_BUTTON_X, DIM_BUTTON_Y
+        );
+
+//        playButton.setBackground(new Color(0xDF3E28));
+////        playButton.setBorder(BorderFactory.createLineBorder(new Color(0xB12C1B), 1));
+//
+//        playButton.setForeground(new Color(0xffffff));
+
+        playButton.addActionListener(e -> System.out.println("Sivalletto"));
+
+        window.add(playButton);
+    }
 
     /**
-     * Init the main window
+     * Display the main window
      */
     private void displayWindow() {
         window.setTitle("Chess");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setSize(new Dimension(DIM_WINDOW + 19, DIM_WINDOW + 39));
+        window.setSize(new Dimension(DIM_WINDOW_X + 19, DIM_WINDOW_Y + 39));
 
         Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("assets/icon.png"))).getImage();
 
@@ -103,6 +128,8 @@ public class Game {
         window.setLayout(null);
         window.setResizable(false);
         window.setVisible(true);
+
+        initPlayButton();
     }
 
     /**
