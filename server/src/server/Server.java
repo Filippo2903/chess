@@ -5,15 +5,9 @@ import gameUtils.PlayerColor;
 import modal.ErrorPopup;
 import modal.Theme;
 
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.Objects;
 
 public class Server {
     public static ServerSocket serverSocket;
@@ -98,3 +92,4 @@ public class Server {
         serverSocket.close();
     }
 }
+

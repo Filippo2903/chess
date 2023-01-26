@@ -20,7 +20,7 @@ public class Piece extends JLabel {
 
     // Label cell size
     private static int cellSize;
-
+    
     boolean promoted = false;
 
     public Piece(PieceType type, PlayerColor playerColor, Point startPosition) {
@@ -35,14 +35,8 @@ public class Piece extends JLabel {
         currentPosition = startPosition;
         this.setBounds(startPosition.x * cellSize, startPosition.y * cellSize, cellSize, cellSize);
 
-        String colorName = playerColor.toString().toLowerCase();
-        String typeName = this.type.toString().toLowerCase();
+        updateIcon();
 
-        String path = "assets/" + colorName + typeName.substring(0, 1).toUpperCase() + typeName.substring(1) + ".png";
-
-        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
-
-        this.setIcon(new ImageIcon(icon.getScaledInstance(cellSize, cellSize, Image.SCALE_SMOOTH)));
         this.setVisible(true);
 
         MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -123,6 +117,14 @@ public class Piece extends JLabel {
 
         this.addMouseListener(mouseAdapter);
         this.addMouseMotionListener(mouseAdapter);
+    }
+
+    private void updateIcon() {
+        String path = "assets/" + pieceColor + type.toString().substring(0, 1).toUpperCase() + type.toString().substring(1) + ".png";
+
+        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
+
+        this.setIcon(new ImageIcon(icon.getScaledInstance(cellSize, cellSize, Image.SCALE_SMOOTH)));
     }
 
     private Point diagonalMove(Point cell) {
@@ -417,11 +419,7 @@ public class Piece extends JLabel {
 
         type = promotion;
 
-        String path = "assets/" + pieceColor + promotion.toString().substring(0, 1).toUpperCase() + promotion.toString().substring(1) + ".png";
-
-        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
-
-        this.setIcon(new ImageIcon(icon.getScaledInstance(cellSize, cellSize, Image.SCALE_SMOOTH)));
+        updateIcon();
     }
 
     public void kill() {
