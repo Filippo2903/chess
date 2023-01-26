@@ -375,6 +375,10 @@ public class Piece extends JLabel {
 
     public void move(Point to) {
         int fps = 60;
+
+        if (fps > cellSize)
+            throw new IllegalArgumentException("FPS cannot be greater than cell size");
+        
         double duration = 1;
         int frame = (int) (fps * duration);
 
