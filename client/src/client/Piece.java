@@ -32,8 +32,8 @@ public class Piece extends JLabel {
         this.setHorizontalAlignment(JLabel.LEFT);
         this.setVerticalAlignment(JLabel.TOP);
 
-        this.setPosition(startPosition.x, startPosition.y);
         currentPosition = startPosition;
+        this.setBounds(startPosition.x * cellSize, startPosition.y * cellSize, cellSize, cellSize);
 
         String colorName = playerColor.toString().toLowerCase();
         String typeName = this.type.toString().toLowerCase();
@@ -374,10 +374,7 @@ public class Piece extends JLabel {
     }
 
     public void move(Point to) {
-
-        System.out.println("Move");
-
-        int fps = 120;
+        int fps = 60;
         double duration = 1;
         int frame = (int) (fps * duration);
 
@@ -403,10 +400,8 @@ public class Piece extends JLabel {
             }
         }
 
-        currentPosition.x /= cellSize;
-        currentPosition.y /= cellSize;
-
-        Game.editBoardCell(currentPosition, this);
+        currentPosition = to;
+        Game.editBoardCell(to, this);
     }
 
     public void promote(PieceType promotion) throws IllegalArgumentException{

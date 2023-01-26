@@ -129,6 +129,7 @@ public class Game {
      * Draw the chessboard in the UI
      */
     private void initChessboard() {
+        // TODO config
         final Color BLACK_CELL = new Color(0xFFEFD5),
                     WHITE_CELL = new Color(0x654321);
 
@@ -213,8 +214,6 @@ public class Game {
 
         initChessboard();
         initPieces();
-
-        chessboardPanel.repaint();
     }
 
 
