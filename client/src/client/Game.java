@@ -15,7 +15,7 @@ public class Game {
     private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
 
-    private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 570;
+    private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 510; // 570
     private static final int DIM_CHESSBOARD = 8;
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
     private static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
@@ -115,7 +115,21 @@ public class Game {
      */
     private void displayWindow() {
         window.setTitle("Chess");
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        window.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (JOptionPane.showConfirmDialog(window,
+                        "Sei sicuro di voler abbandonare la partita?", "Conferma chiusura",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+
+                    System.exit(0);
+                }
+            }
+        });
+
         window.setSize(new Dimension(WINDOW_WIDTH + 19, WINDOW_HEIGHT + 39));
 
         Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("assets/icon.png"))).getImage();
@@ -200,13 +214,6 @@ public class Game {
         }
         // Repaint to apply changes
         chessboardPanel.repaint();
-//
-//        // TODO ?
-//
-//        // Repaint to apply changes
-//        window.repaint();
-//
-//        // TODO ?
     }
 
 

@@ -55,38 +55,42 @@ public class Server {
             ErrorPopup.show("Error starting the server");
         }
 
-        PlayerColor colorPlayerOne, colorPlayerTwo;
-        if ((int) (Math.random() * 2) == 0) {
-            colorPlayerOne = PlayerColor.WHITE;
-            colorPlayerTwo = PlayerColor.BLACK;
-        } else {
-            colorPlayerOne = PlayerColor.BLACK;
-            colorPlayerTwo = PlayerColor.WHITE;
-        }
+        boolean repeat = true;
 
-        System.out.println("Assigned color " + colorPlayerOne + " to player one");
-        System.out.println("Assigned color " + colorPlayerTwo + " to player two");
+        while (repeat) {
+            PlayerColor colorPlayerOne, colorPlayerTwo;
+            if ((int) (Math.random() * 2) == 0) {
+                colorPlayerOne = PlayerColor.WHITE;
+                colorPlayerTwo = PlayerColor.BLACK;
+            } else {
+                colorPlayerOne = PlayerColor.BLACK;
+                colorPlayerTwo = PlayerColor.WHITE;
+            }
 
-        PlayerHandler playerOne = new PlayerHandler(colorPlayerOne);
-        PlayerHandler playerTwo = new PlayerHandler(colorPlayerTwo);
+            System.out.println("Assigned color " + colorPlayerOne + " to player one");
+            System.out.println("Assigned color " + colorPlayerTwo + " to player two");
 
-        playerOne.setOpponent(playerTwo);
-        playerTwo.setOpponent(playerOne);
+            PlayerHandler playerOne = new PlayerHandler(colorPlayerOne);
+            PlayerHandler playerTwo = new PlayerHandler(colorPlayerTwo);
 
-        playerOne.waitConnection();
-        playerTwo.waitConnection();
+            playerOne.setOpponent(playerTwo);
+            playerTwo.setOpponent(playerOne);
 
-        boolean playing = true;
-        if (colorPlayerTwo == PlayerColor.WHITE) {
-            playing = Server.handleMove(playerTwo);
-        }
+            playerOne.waitConnection();
+            playerTwo.waitConnection();
 
-        while (playing) {
-            playing = handleMove(playerOne);
+            boolean playing = true;
+            if (colorPlayerTwo == PlayerColor.WHITE) {
+                playing = Server.handleMove(playerTwo);
+            }
 
-            if (!playing) break;
+            while (playing) {
+                playing = handleMove(playerOne);
 
-            playing = handleMove(playerTwo);
+                if (!playing) break;
+
+                playing = handleMove(playerTwo);
+            }
         }
 
         serverSocket.close();

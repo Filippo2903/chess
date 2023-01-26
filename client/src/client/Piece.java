@@ -20,7 +20,7 @@ public class Piece extends JLabel {
 
     // Label cell size
     private static int cellSize;
-    
+
     boolean promoted = false;
 
     public Piece(PieceType type, PlayerColor playerColor, Point startPosition) {

@@ -63,8 +63,6 @@ public class Client {
         game = new Game();
         game.startWindow();
 
-//        game.startGame(PlayerColor.WHITE);
-
         // Try connecting to the server
         while (true) {
             try {
