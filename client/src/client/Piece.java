@@ -63,6 +63,7 @@ public class Piece extends JLabel {
                 }
             }
 
+
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (undo) return;
@@ -378,7 +379,7 @@ public class Piece extends JLabel {
 
         if (fps > cellSize)
             throw new IllegalArgumentException("FPS cannot be greater than cell size");
-        
+
         double duration = 1;
         int frame = (int) (fps * duration);
 

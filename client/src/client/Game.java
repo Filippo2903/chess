@@ -70,13 +70,15 @@ public class Game {
             enemyPiece.kill();
 
             enemyPiece = new Piece(packet.type, clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, packet.to);
-            //enemyPiece.setPosition(packet.to.x, packet.to.y);
             chessboardPanel.add(enemyPiece);
             chessboardPanel.repaint();
         }
 
         // Place the piece in the new position
         editBoardCell(packet.to, enemyPiece);
+
+        // Place the piece in front of the other
+        enemyPiece.getParent().setComponentZOrder(enemyPiece, 0);
 
         // Move the piece
         enemyPiece.move(packet.to);
@@ -85,6 +87,9 @@ public class Game {
         changePlayerTurn();
     }
 
+    /**
+     * Display the play button
+     */
     private void initPlayButton() {
         final int DIM_BUTTON_X = WINDOW_WIDTH / 2, DIM_BUTTON_Y = WINDOW_HEIGHT - (CELL_SIZE * DIM_CHESSBOARD + MARGIN * 3);
 

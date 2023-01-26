@@ -16,21 +16,50 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Server {
-    private static Scanner inputPlayerOne, inputPlayerTwo;
-    private static PrintWriter outputPlayerOne, outputPlayerTwo;
+    public static ServerSocket serverSocket;
+
+    private static Packet turnBoard(Packet packet) {
+        packet.from.y = 7 - packet.from.y;
+        packet.to.y = 7 - packet.to.y;
+
+        return packet;
+    }
+
+    private static boolean handleMove(PlayerHandler player) {
+        String serializedMove = player.listenMove();
+
+        Packet packet = null;
+        try {
+            packet = Server.turnBoard(Packet.fromString(serializedMove));
+        } catch (Exception e) {
+            ErrorPopup.show(203);
+            System.exit(-1);
+        }
+
+        if (!packet.endGame) {
+            return false;
+        }
+
+        try {
+            player.getOpponent().send(Objects.requireNonNull(packet).serializeToString());
+        } catch (IOException e) {
+            ErrorPopup.show(204);
+            System.exit(-1);
+        }
+
+        return true;
+    }
 
     public static void main(String[] args) throws IOException {
         Theme.setTheme();
 
-        ServerSocket serverSocket = new ServerSocket(4445);
+        int port = 4445;
 
-        System.out.println("Server listening...");
-
-        Socket clientSocketOne = serverSocket.accept();
-        System.out.println("Player one connected!");
-
-        Socket clientSocketTwo = serverSocket.accept();
-        System.out.println("Player two connected!");
+        try {
+            serverSocket = new ServerSocket(port);
+        } catch (IOException e) {
+            ErrorPopup.show("Error starting the server");
+        }
 
         PlayerColor colorPlayerOne, colorPlayerTwo;
         if ((int) (Math.random() * 2) == 0) {
@@ -44,77 +73,28 @@ public class Server {
         System.out.println("Assigned color " + colorPlayerOne + " to player one");
         System.out.println("Assigned color " + colorPlayerTwo + " to player two");
 
-        ClientHandler server = new ClientHandler(clientSocketOne, clientSocketTwo, colorPlayerOne, colorPlayerTwo);
+        PlayerHandler playerOne = new PlayerHandler(colorPlayerOne);
+        PlayerHandler playerTwo = new PlayerHandler(colorPlayerTwo);
+
+        playerOne.setOpponent(playerTwo);
+        playerTwo.setOpponent(playerOne);
+
+        playerOne.waitConnection();
+        playerTwo.waitConnection();
 
         boolean playing = true;
-
         if (colorPlayerTwo == PlayerColor.WHITE) {
-            playing = server.send(inputPlayerTwo, outputPlayerOne);
+            playing = Server.handleMove(playerTwo);
         }
+
         while (playing) {
-            playing = server.send(inputPlayerOne, outputPlayerTwo);
+            playing = handleMove(playerOne);
 
             if (!playing) break;
 
-            playing = server.send(inputPlayerTwo, outputPlayerOne);
+            playing = handleMove(playerTwo);
         }
 
         serverSocket.close();
-        inputPlayerOne.close();
-        inputPlayerTwo.close();
-        outputPlayerOne.close();
-        outputPlayerTwo.close();
-    }
-
-    private static class ClientHandler {
-        public ClientHandler(Socket clientPlayerOne, Socket clientPlayerTwo, PlayerColor colorPlayerOne, PlayerColor colorPlayerTwo) {
-            try {
-                inputPlayerOne = new Scanner(clientPlayerOne.getInputStream());
-                outputPlayerOne = new PrintWriter(clientPlayerOne.getOutputStream(), true);
-
-                inputPlayerTwo = new Scanner(clientPlayerTwo.getInputStream());
-                outputPlayerTwo = new PrintWriter(clientPlayerTwo.getOutputStream(), true);
-            } catch (IOException e) {
-                ErrorPopup.show(301);
-            }
-
-            outputPlayerOne.println(colorPlayerOne);
-            outputPlayerTwo.println(colorPlayerTwo);
-        }
-
-        public boolean send(Scanner sender, PrintWriter receiver) {
-            String serializedMove = null;
-
-            try {
-                // Read from sender client
-                serializedMove = sender.nextLine();
-            } catch (NoSuchElementException e) {
-                ErrorPopup.show("Client disconnected.");
-                System.exit(-1);
-            }
-
-            Packet packet = null;
-            try {
-                packet = Packet.fromString(serializedMove);
-            } catch (Exception e) {
-                ErrorPopup.show(203);
-                System.exit(-1);
-            }
-
-            packet.from.y = 7 - packet.from.y;
-            packet.to.y = 7 - packet.to.y;
-
-            try {
-                serializedMove = packet.serializeToString();
-            } catch (IOException e) {
-                ErrorPopup.show(204);
-                System.exit(-1);
-            }
-
-            // Send to other client
-            receiver.println(serializedMove);
-
-            return packet.endGame;
-        }
     }
 }
