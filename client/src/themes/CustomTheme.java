@@ -1,9 +1,9 @@
 package themes;
 
-import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
-public class CustomTheme extends FlatDarkLaf {
+public class CustomTheme extends FlatLightLaf {
     public static boolean setup() {
-        return setup( new CustomTheme() );
+        return setup( new CustomTheme());
     }
 }

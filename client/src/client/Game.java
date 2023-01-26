@@ -141,7 +141,8 @@ public class Game {
         window.setResizable(false);
         window.setVisible(true);
 
-        initPlayButton();
+        // TODO
+        //initPlayButton();
     }
 
     /**

@@ -120,7 +120,7 @@ public class Piece extends JLabel {
     }
 
     private void updateIcon() {
-        String path = "assets/" + pieceColor + type.toString().substring(0, 1).toUpperCase() + type.toString().substring(1) + ".png";
+        String path = "assets/" + pieceColor + type + ".png";
 
         Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
 
