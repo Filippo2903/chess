@@ -16,7 +16,7 @@ public class Piece extends JLabel {
     private final PlayerColor pieceColor;
 
     private final Point newPosition = new Point();
-    private Point currentPosition = new Point(-1, -1);
+    private Point currentPosition;
 
     // Label cell size
     private static int cellSize;
@@ -96,23 +96,18 @@ public class Piece extends JLabel {
                 if (canMove(to)) {
                     Point prevPosition = new Point(currentPosition.x, currentPosition.y);
 
-                    System.out.println("Sium");
+                    Piece.this.setPosition(to.x, to.y);
 
-                    Thread test = new Thread(()->{Piece.this.move(to);});
-                    test.start();
+                    if (promoted) {
+                        Client.sendMove(new Packet(prevPosition, currentPosition, Piece.this.getType()));
+                    } else {
+                        Client.sendMove(new Packet(prevPosition, currentPosition));
+                    }
 
+                    Thread recieveThread = new Thread(Client::receiveMove);
+                    recieveThread.start();
 
-
-//                    if (promoted) {
-//                        Client.sendMove(new Packet(prevPosition, currentPosition, Piece.this.getType()));
-//                    } else {
-//                        Client.sendMove(new Packet(prevPosition, currentPosition));
-//                    }
-//
-//                    Thread recieveThread = new Thread(Client::receiveMove);
-//                    recieveThread.start();
-//
-//                    Game.changePlayerTurn();
+                    Game.changePlayerTurn();
 
                     return;
                 }
@@ -373,7 +368,7 @@ public class Piece extends JLabel {
         currentPosition.x = x;
         currentPosition.y = y;
 
-        this.setBounds(x * cellSize, y * cellSize, cellSize, cellSize);
+        this.setLocation(x * cellSize, y * cellSize);
 
         Game.editBoardCell(currentPosition, this);
     }
@@ -384,42 +379,28 @@ public class Piece extends JLabel {
 
         int fps = 120;
         double duration = 1;
-        int steps = (int) (fps * duration);
+        int frame = (int) (fps * duration);
 
-        to.x *= cellSize;
-        to.y *= cellSize;
+        Point animationPosition = new Point(currentPosition.x * cellSize, currentPosition.y * cellSize);
+        Point goalAnimation = new Point(to.x * cellSize, to.y * cellSize);
 
-        currentPosition.x *= cellSize;
-        currentPosition.y *= cellSize;
+        int widthDifference = goalAnimation.x - animationPosition.x;
+        int heightDifference = goalAnimation.y - animationPosition.y;
 
-        double heightDifference = to.y - currentPosition.y;
-        double widthDifference = to.x - currentPosition.x;
+        double stepWidth = (double) widthDifference / frame;
+        double stepHeight = (double) heightDifference / frame;
 
-        double stepHeight = heightDifference / steps;
-        double stepWidth = widthDifference / steps;
+        for (int stepCount = 0; stepCount < frame; stepCount++) {
+            animationPosition.x += stepWidth;
+            animationPosition.y += stepHeight;
 
-        System.out.println("from.x: " + currentPosition.x + " from.y: " + currentPosition.y);
-        System.out.println("to.x: " + to.x + " to.y: " + to.y);
-        System.out.println("cellSize: " + cellSize);
-
-        System.out.println("heightDifference: " + heightDifference + " widthDifference: " + widthDifference);
-        System.out.println("stepHeight: " + stepHeight + " stepWidth: " + stepWidth);
-
-
-        for (int stepCount = 0; stepCount < steps; stepCount++) {
-            System.out.println("currentPosition.x: " + currentPosition.x + " currentPosition.y: " + currentPosition.y);
-
-            currentPosition.x += stepWidth;
-            currentPosition.y += stepHeight;
-
-            this.setBounds(currentPosition.x, currentPosition.y, cellSize, cellSize);
+            this.setLocation(animationPosition);
 
             try {
-                Thread.sleep((long) (duration / steps));
+                Thread.sleep((long) (duration * 100) / frame);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-
         }
 
         currentPosition.x /= cellSize;

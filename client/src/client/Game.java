@@ -15,7 +15,7 @@ public class Game {
     private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
 
-    private static final int WINDOW_WIDTH = 500, WINDOW_HEIGHT = 570;
+    private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 570;
     private static final int DIM_CHESSBOARD = 8;
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
     private static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
@@ -79,7 +79,7 @@ public class Game {
         editBoardCell(packet.to, enemyPiece);
 
         // Move the piece
-        enemyPiece.setPosition(packet.to.x, packet.to.y);
+        enemyPiece.move(packet.to);
 
         // Change the player turn
         changePlayerTurn();
@@ -100,12 +100,7 @@ public class Game {
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
 
-//        playButton.setBackground(new Color(0xDF3E28));
-////        playButton.setBorder(BorderFactory.createLineBorder(new Color(0xB12C1B), 1));
-//
-//        playButton.setForeground(new Color(0xffffff));
-
-        playButton.addActionListener(e -> System.out.println("Sivalletto"));
+        playButton.addActionListener(e -> {});
 
         window.add(playButton);
     }
@@ -188,18 +183,24 @@ public class Game {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
                 // Add pieces
                 piece = new Piece(startRow[x], playerColor, new Point(x, playerColor == clientColor ? 7 : 0));
+                board[playerColor == clientColor ? 7 : 0][x] = piece;
                 chessboardPanel.add(piece);
 
                 // Add pawns
                 piece = new Piece(PieceType.PAWN, playerColor, new Point(x, playerColor == clientColor ? 6 : 1));
+                board[playerColor == clientColor ? 6 : 1][x] = piece;
                 chessboardPanel.add(piece);
-
-                chessboardPanel.repaint();
             }
         }
-
         // Repaint to apply changes
-        window.repaint();
+        chessboardPanel.repaint();
+//
+//        // TODO ?
+//
+//        // Repaint to apply changes
+//        window.repaint();
+//
+//        // TODO ?
     }
 
 
@@ -210,7 +211,6 @@ public class Game {
         if (chessboardPanel != null)
             window.remove(chessboardPanel);
 
-        chessboardPanel = new JPanel();
         initChessboard();
         initPieces();
 
