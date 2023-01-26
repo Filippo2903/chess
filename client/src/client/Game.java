@@ -15,10 +15,10 @@ public class Game {
     private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
 
-    private static final int DIM_WINDOW_X = 500, DIM_WINDOW_Y = 570;
+    private static final int WINDOW_WIDTH = 500, WINDOW_HEIGHT = 570;
     private static final int DIM_CHESSBOARD = 8;
-    private static final int MARGIN = DIM_WINDOW_X / (4 * DIM_CHESSBOARD + 2);
-    private static final int CELL_SIZE = (DIM_WINDOW_X - MARGIN * 2) / DIM_CHESSBOARD;
+    private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
+    private static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
 
     // The board where all the pieces will be stored
     private static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
@@ -26,9 +26,6 @@ public class Game {
     private final JFrame window = new JFrame();
 
     private JPanel chessboardPanel;
-
-    public Game() {
-    }
 
     public static PlayerColor getPlayerColor() {
         return clientColor;
@@ -58,7 +55,7 @@ public class Game {
      * @param packet Packet to get data from
      */
     public void enemyMove(Packet packet) {
-        Piece piece = board[packet.from.y][packet.from.x];
+        Piece enemyPiece = board[packet.from.y][packet.from.x];
 
         // Delete previous position
         editBoardCell(packet.from, null);
@@ -70,26 +67,26 @@ public class Game {
         }
 
         if (packet.type != null) {
-            piece.kill();
+            enemyPiece.kill();
 
-            piece = new Piece(packet.type, clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE);
-            piece.setPosition(packet.to.x, packet.to.y);
-            chessboardPanel.add(piece);
+            enemyPiece = new Piece(packet.type, clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, packet.to);
+            //enemyPiece.setPosition(packet.to.x, packet.to.y);
+            chessboardPanel.add(enemyPiece);
             chessboardPanel.repaint();
         }
 
         // Place the piece in the new position
-        editBoardCell(packet.to, piece);
+        editBoardCell(packet.to, enemyPiece);
 
         // Move the piece
-        piece.setPosition(packet.to.x, packet.to.y);
+        enemyPiece.setPosition(packet.to.x, packet.to.y);
 
         // Change the player turn
         changePlayerTurn();
     }
 
     private void initPlayButton() {
-        final int DIM_BUTTON_X = DIM_WINDOW_X / 2, DIM_BUTTON_Y = DIM_WINDOW_Y - (CELL_SIZE * DIM_CHESSBOARD + MARGIN * 3);
+        final int DIM_BUTTON_X = WINDOW_WIDTH / 2, DIM_BUTTON_Y = WINDOW_HEIGHT - (CELL_SIZE * DIM_CHESSBOARD + MARGIN * 3);
 
         CustomTheme.setup();
 
@@ -98,7 +95,7 @@ public class Game {
         playButton.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
 
         playButton.setBounds(
-                DIM_WINDOW_X / 2 - DIM_BUTTON_X / 2,
+                WINDOW_WIDTH / 2 - DIM_BUTTON_X / 2,
                 CELL_SIZE * DIM_CHESSBOARD + MARGIN * 2,
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
@@ -119,7 +116,7 @@ public class Game {
     private void displayWindow() {
         window.setTitle("Chess");
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        window.setSize(new Dimension(DIM_WINDOW_X + 19, DIM_WINDOW_Y + 39));
+        window.setSize(new Dimension(WINDOW_WIDTH + 19, WINDOW_HEIGHT + 39));
 
         Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("assets/icon.png"))).getImage();
 
@@ -190,13 +187,11 @@ public class Game {
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
                 // Add pieces
-                piece = new Piece(startRow[x], playerColor);
-                piece.setPosition(x, playerColor == clientColor ? 7 : 0);
+                piece = new Piece(startRow[x], playerColor, new Point(x, playerColor == clientColor ? 7 : 0));
                 chessboardPanel.add(piece);
 
                 // Add pawns
-                piece = new Piece(PieceType.PAWN, playerColor);
-                piece.setPosition(x, playerColor == clientColor ? 6 : 1);
+                piece = new Piece(PieceType.PAWN, playerColor, new Point(x, playerColor == clientColor ? 6 : 1));
                 chessboardPanel.add(piece);
 
                 chessboardPanel.repaint();

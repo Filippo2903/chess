@@ -64,39 +64,39 @@ public class Client {
         game = new Game();
         game.startWindow();
 
+        game.startGame(PlayerColor.WHITE);
 
-
-        // Try connecting to the server
-        while (true) {
-            try {
-                socket = new Socket(address, 4445);
-                is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                os = new PrintWriter(socket.getOutputStream(), true);
-
-                break;
-            } catch (IOException e) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException err) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-
-        // Read and set the assigned color to the client
-        String colorName = is.readLine();
-        PlayerColor color = colorName.equals("WHITE") ? PlayerColor.WHITE : PlayerColor.BLACK;
-
-        game.startGame(color);
-
-        System.out.println("Client Address : " + address);
-
-        System.out.println("Client has color " + color);
-
-        // If the client has black, it has to listen first
-        if (color == PlayerColor.BLACK) {
-            receiveMove();
-        }
+//        // Try connecting to the server
+//        while (true) {
+//            try {
+//                socket = new Socket(address, 4445);
+//                is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//                os = new PrintWriter(socket.getOutputStream(), true);
+//
+//                break;
+//            } catch (IOException e) {
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException err) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        }
+//
+//        // Read and set the assigned color to the client
+//        String colorName = is.readLine();
+//        PlayerColor color = colorName.equals("WHITE") ? PlayerColor.WHITE : PlayerColor.BLACK;
+//
+//        game.startGame(color);
+//
+//        System.out.println("Client Address : " + address);
+//
+//        System.out.println("Client has color " + color);
+//
+//        // If the client has black, it has to listen first
+//        if (color == PlayerColor.BLACK) {
+//            receiveMove();
+//        }
     }
 
     public static void endCommunication() {

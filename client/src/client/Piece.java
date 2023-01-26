@@ -16,14 +16,14 @@ public class Piece extends JLabel {
     private final PlayerColor pieceColor;
 
     private final Point newPosition = new Point();
-    private final Point currentPosition = new Point(-1, -1);
+    private Point currentPosition = new Point(-1, -1);
 
     // Label cell size
     private static int cellSize;
 
     boolean promoted = false;
 
-    public Piece(PieceType type, PlayerColor playerColor) {
+    public Piece(PieceType type, PlayerColor playerColor, Point startPosition) {
         super();
 
         this.type = type;
@@ -31,6 +31,9 @@ public class Piece extends JLabel {
 
         this.setHorizontalAlignment(JLabel.LEFT);
         this.setVerticalAlignment(JLabel.TOP);
+
+        this.setPosition(startPosition.x, startPosition.y);
+        currentPosition = startPosition;
 
         String colorName = playerColor.toString().toLowerCase();
         String typeName = this.type.toString().toLowerCase();
@@ -93,18 +96,23 @@ public class Piece extends JLabel {
                 if (canMove(to)) {
                     Point prevPosition = new Point(currentPosition.x, currentPosition.y);
 
-                    Piece.this.setPosition(to.x, to.y);
+                    System.out.println("Sium");
 
-                    if (promoted) {
-                        Client.sendMove(new Packet(prevPosition, currentPosition, Piece.this.getType()));
-                    } else {
-                        Client.sendMove(new Packet(prevPosition, currentPosition));
-                    }
+                    Thread test = new Thread(()->{Piece.this.move(to);});
+                    test.start();
 
-                    Thread recieveThread = new Thread(Client::receiveMove);
-                    recieveThread.start();
 
-                    Game.changePlayerTurn();
+
+//                    if (promoted) {
+//                        Client.sendMove(new Packet(prevPosition, currentPosition, Piece.this.getType()));
+//                    } else {
+//                        Client.sendMove(new Packet(prevPosition, currentPosition));
+//                    }
+//
+//                    Thread recieveThread = new Thread(Client::receiveMove);
+//                    recieveThread.start();
+//
+//                    Game.changePlayerTurn();
 
                     return;
                 }
@@ -352,6 +360,7 @@ public class Piece extends JLabel {
     }
 
     public void setPosition(int x, int y) {
+
         if (x == currentPosition.x && y == currentPosition.y) {
             this.setLocation(x * cellSize, y * cellSize);
             return;
@@ -365,6 +374,56 @@ public class Piece extends JLabel {
         currentPosition.y = y;
 
         this.setBounds(x * cellSize, y * cellSize, cellSize, cellSize);
+
+        Game.editBoardCell(currentPosition, this);
+    }
+
+    public void move(Point to) {
+
+        System.out.println("Move");
+
+        int fps = 120;
+        double duration = 1;
+        int steps = (int) (fps * duration);
+
+        to.x *= cellSize;
+        to.y *= cellSize;
+
+        currentPosition.x *= cellSize;
+        currentPosition.y *= cellSize;
+
+        double heightDifference = to.y - currentPosition.y;
+        double widthDifference = to.x - currentPosition.x;
+
+        double stepHeight = heightDifference / steps;
+        double stepWidth = widthDifference / steps;
+
+        System.out.println("from.x: " + currentPosition.x + " from.y: " + currentPosition.y);
+        System.out.println("to.x: " + to.x + " to.y: " + to.y);
+        System.out.println("cellSize: " + cellSize);
+
+        System.out.println("heightDifference: " + heightDifference + " widthDifference: " + widthDifference);
+        System.out.println("stepHeight: " + stepHeight + " stepWidth: " + stepWidth);
+
+
+        for (int stepCount = 0; stepCount < steps; stepCount++) {
+            System.out.println("currentPosition.x: " + currentPosition.x + " currentPosition.y: " + currentPosition.y);
+
+            currentPosition.x += stepWidth;
+            currentPosition.y += stepHeight;
+
+            this.setBounds(currentPosition.x, currentPosition.y, cellSize, cellSize);
+
+            try {
+                Thread.sleep((long) (duration / steps));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        currentPosition.x /= cellSize;
+        currentPosition.y /= cellSize;
 
         Game.editBoardCell(currentPosition, this);
     }
