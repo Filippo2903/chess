@@ -12,24 +12,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Objects;
 
-public class Piece extends JLabel {
-    private PieceType type;
-    private final PlayerColor pieceColor;
 
-    private final Point newPosition = new Point();
-    private Point currentPosition;
+public abstract class Piece extends JLabel {
 
     // Label cell size
-    private static int cellSize;
+    protected static int cellSize;
+    protected Point currentPosition;
+    protected final PlayerColor pieceColor;
 
-    boolean promoted = false;
+    protected boolean promoted = false;
+    private final Point newPosition = new Point();
 
-    public Piece(PieceType type, PlayerColor playerColor, Point startPosition) {
+    public Piece(PlayerColor playerColor, Point startPosition) {
         super();
 
-        this.type = type;
         this.pieceColor = playerColor;
 
         this.setHorizontalAlignment(JLabel.LEFT);
@@ -377,17 +374,6 @@ public class Piece extends JLabel {
         Game.editBoardCell(to, this);
     }
 
-    public void promote(PieceType promotion) throws IllegalArgumentException{
-        if (type != PieceType.PAWN || promotion == PieceType.KING || promotion == PieceType.PAWN)
-            throw new IllegalArgumentException("Cannot promote " + type.toString().toLowerCase());
-
-        promoted = true;
-
-        type = promotion;
-
-        updateIcon();
-    }
-
     public void kill() {
         Game.editBoardCell(currentPosition, null);
 
@@ -396,9 +382,6 @@ public class Piece extends JLabel {
         chessboardPanel.repaint();
     }
 
-    public PieceType getType() {
-        return type;
-    }
     public PlayerColor getColor() {
         return pieceColor;
     }

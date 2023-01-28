@@ -11,6 +11,8 @@ import themes.CustomTheme;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -69,13 +71,13 @@ public class Game {
             pieceTo.kill();
         }
 
-        if (packet.type != null) {
-            enemyPiece.kill();
-
-            enemyPiece = new Piece(packet.type, clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, packet.to);
-            chessboardPanel.add(enemyPiece);
-            chessboardPanel.repaint();
-        }
+//        if (packet.type != null) {
+//            enemyPiece.kill();
+//
+//            enemyPiece = new Piece(packet.type, clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, packet.to);
+//            chessboardPanel.add(enemyPiece);
+//            chessboardPanel.repaint();
+//        }
 
         // Place the piece in the new position
         editBoardCell(packet.to, enemyPiece);
@@ -193,10 +195,9 @@ public class Game {
     private void initPieces() {
 
         /* Paint all the pieces in the board */
-
-        final PieceType[] startRow = {
-                PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN,
-                PieceType.KING, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK
+        final Class<?>[] startRow = {
+                Rook.class, Knight.class, Bishop.class, Queen.class,
+                King.class, Bishop.class, Knight.class, Rook.class
         };
 
         // Set cell size and fill the board
@@ -207,9 +208,33 @@ public class Game {
         Piece piece = null;
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
+                Class<?> pieceClass = startRow[x];
+
                 // Add pieces
-                piece = new Piece(startRow[x], playerColor, new Point(x, playerColor == clientColor ? 7 : 0));
+                try {
+                    piece = (Piece) pieceClass
+                                .getDeclaredConstructor(PlayerColor.class, Point.class)
+                                .newInstance(playerColor, new Point(x, playerColor == clientColor ? 7 : 0));
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                         NoSuchMethodException e) {
+                    ErrorPopup.show(5);
+                }
+
                 board[playerColor == clientColor ? 7 : 0][x] = piece;
+
+                assert piece != null;
+                piece.setBounds(
+                    x * CELL_SIZE, (playerColor == clientColor ? 7 : 0) * CELL_SIZE,
+                    CELL_SIZE, CELL_SIZE
+                );
+
+                try {
+                    Method setImage = piece.getClass().getMethod("setImage");
+                    setImage.invoke(piece);
+                } catch (Exception e) {
+                    ErrorPopup.show(6);
+                }
+
                 chessboardPanel.add(piece);
 
                 // Add pawns
@@ -232,6 +257,7 @@ public class Game {
                 chessboardPanel.add(piece);
             }
         }
+
         // Repaint to apply changes
         chessboardPanel.repaint();
     }
