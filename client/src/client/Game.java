@@ -1,9 +1,12 @@
 package client;
 
+import client.Piece.*;
+
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
+import modal.ErrorPopup;
 import themes.CustomTheme;
 
 import javax.swing.*;
@@ -81,7 +84,7 @@ public class Game {
         enemyPiece.getParent().setComponentZOrder(enemyPiece, 0);
 
         // Move the piece
-        enemyPiece.move(packet.to);
+        enemyPiece.animatedMove(packet.to);
 
         // Change the player turn
         changePlayerTurn();
@@ -115,24 +118,26 @@ public class Game {
      */
     private void displayWindow() {
         window.setTitle("Chess");
-        window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        window.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                if (JOptionPane.showConfirmDialog(window,
-                        "Sei sicuro di voler abbandonare la partita?", "Conferma chiusura",
-                        JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+//        window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-                    System.exit(0);
-                }
-            }
-        });
+//        window.addWindowListener(new java.awt.event.WindowAdapter() {
+//            @Override
+//            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+//                if (JOptionPane.showConfirmDialog(window,
+//                        "Sei sicuro di voler abbandonare la partita?", "Conferma chiusura",
+//                        JOptionPane.YES_NO_OPTION,
+//                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+//
+//                    System.exit(0);
+//                }
+//            }
+//        });
 
         window.setSize(new Dimension(WINDOW_WIDTH + 19, WINDOW_HEIGHT + 39));
 
-        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("assets/icon.png"))).getImage();
+        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("icon.png"))).getImage();
 
         window.setIconImage(icon);
 
@@ -141,7 +146,7 @@ public class Game {
         window.setResizable(false);
         window.setVisible(true);
 
-        // TODO
+        // TODO matchmaking
         //initPlayButton();
     }
 
@@ -199,7 +204,7 @@ public class Game {
         Arrays.stream(board).forEach(cell -> Arrays.fill(cell, null));
 
         // Create, paint and store every piece in the chessboard
-        Piece piece;
+        Piece piece = null;
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
                 // Add pieces
@@ -208,8 +213,22 @@ public class Game {
                 chessboardPanel.add(piece);
 
                 // Add pawns
-                piece = new Piece(PieceType.PAWN, playerColor, new Point(x, playerColor == clientColor ? 6 : 1));
+                piece = new Pawn(playerColor, new Point(x, playerColor == clientColor ? 6 : 1));
+
                 board[playerColor == clientColor ? 6 : 1][x] = piece;
+
+                piece.setBounds(
+                        x * CELL_SIZE, (playerColor == clientColor ? 6 : 1) * CELL_SIZE,
+                        CELL_SIZE, CELL_SIZE
+                );
+
+                try {
+                    Method setImage = piece.getClass().getMethod("setImage");
+                    setImage.invoke(piece);
+                } catch (Exception e) {
+                    ErrorPopup.show(6);
+                }
+
                 chessboardPanel.add(piece);
             }
         }
