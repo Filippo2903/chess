@@ -53,6 +53,7 @@ public class PlayerHandler {
             serializedMove = input.nextLine();
         } catch (NoSuchElementException e) {
             System.out.println("Player " + playerColor + " disconnected");
+            Server.matchmaking();
         }
 
         return serializedMove;

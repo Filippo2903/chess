@@ -17,7 +17,7 @@ public class Packet implements Serializable {
     public final Point to;
 
     // Piece Type
-    public final PieceType type;
+    public final Class<?> type;
 
     // Is game over?
     public final boolean endGame;
@@ -35,7 +35,7 @@ public class Packet implements Serializable {
      * @param to Arrival position of the piece
      * @param type Type of the piece
      */
-    public Packet(Point from, Point to, PieceType type) {
+    public Packet(Point from, Point to,  Class<?> type) {
         this(from, to, type, true);
     }
 
@@ -45,7 +45,7 @@ public class Packet implements Serializable {
      * @param type Type of the piece
      * @param endGame Is game over?
      */
-    public Packet(Point from, Point to, PieceType type, boolean endGame) {
+    public Packet(Point from, Point to, Class<?> type, boolean endGame) {
         this.from = from;
         this.to = to;
         this.type = type;

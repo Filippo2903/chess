@@ -1,26 +1,38 @@
 package client.Piece;
 
+import client.DragAndDrop;
 import gameUtils.PlayerColor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-public class Queen extends Piece implements PieceImage {
-    public Queen(PlayerColor playerColor, Point startPosition) {
-        super(playerColor, startPosition);
+public class Queen extends Piece implements CheckPlayerMove, PieceImage {
+    private final Rook queenStraightMoves;
+    private final Bishop queenDiagonalMoves;
+
+    public Queen(PlayerColor playerColor) {
+        super(playerColor);
+
+        DragAndDrop dragAndDrop = new DragAndDrop(this);
+
+        this.addMouseListener(dragAndDrop);
+        this.addMouseMotionListener(dragAndDrop);
+
+        queenStraightMoves = new Rook(pieceColor);
+        queenDiagonalMoves = new Bishop(pieceColor);
     }
 
     @Override
-    public boolean canMove(Point cell) {
-        if (isNotPlayerTurn() || isNotPlayerPiece()) {
+    public boolean canMove(Point to) {
+        if (isNotPlayerTurn() || isNotPlayerPiece(this.getColor())) {
             return false;
         }
 
-        Rook queenStraightMoves = new Rook(pieceColor, currentPosition);
-        Bishop queenDiagonalMoves = new Bishop(pieceColor, currentPosition);
+        queenStraightMoves.currentPosition = this.currentPosition;
+        queenDiagonalMoves.currentPosition = this.currentPosition;
 
-        return queenStraightMoves.canMove(cell) || queenDiagonalMoves.canMove(cell);
+        return queenStraightMoves.canMove(to) || queenDiagonalMoves.canMove(to);
     }
 
     @Override

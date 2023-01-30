@@ -1,24 +1,28 @@
 package client.Piece;
 
 import client.Game;
+import client.DragAndDrop;
 import gameUtils.PlayerColor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-public class Knight extends Piece implements PieceImage {
-    public Knight(PlayerColor playerColor, Point startPosition) {
-        super(playerColor, startPosition);
+public class Knight extends Piece implements CheckPlayerMove, PieceImage {
+    public Knight(PlayerColor playerColor) {
+        super(playerColor);
+
+        DragAndDrop dragAndDrop = new DragAndDrop(this);
+
+        this.addMouseListener(dragAndDrop);
+        this.addMouseMotionListener(dragAndDrop);
     }
 
     @Override
-    public boolean canMove(Point cell) {
-        if (isNotPlayerTurn() || isNotPlayerPiece()) {
+    public boolean canMove(Point to) {
+        if (isNotPlayerTurn() || isNotPlayerPiece(this.getColor())) {
             return false;
         }
-
-        Piece[][] board = Game.getBoard();
 
         Point[] moves = {
                 new Point(-2, -1),
@@ -31,21 +35,18 @@ public class Knight extends Piece implements PieceImage {
                 new Point(-2, 1)
         };
 
-        boolean canMove = false;
         for (Point move : moves) {
-            if (cell.x == currentPosition.x + move.x && cell.y == currentPosition.y + move.y) {
-                canMove = true;
-                break;
+            if (to.x == currentPosition.x + move.x && to.y == currentPosition.y + move.y) {
+                Piece[][] board = Game.getBoard();
+                if (board[to.y][to.x] != null) {
+                    board[to.y][to.x].kill();
+                }
+
+                return true;
             }
         }
 
-        if (canMove) {
-            if (board[cell.y][cell.x] != null) {
-                board[cell.y][cell.x].kill();
-            }
-        }
-
-        return canMove;
+        return false;
     }
 
     @Override

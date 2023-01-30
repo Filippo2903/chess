@@ -1,48 +1,39 @@
 package client.Piece;
 
 import client.Game;
+import client.DragAndDrop;
 import gameUtils.PlayerColor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-public class Rook extends Piece implements PieceImage {
-    public Rook(PlayerColor color, Point startPosition) {
-        super(color, startPosition);
-    }
+public class Rook extends Piece implements CheckPlayerMove, PieceImage, StraightMove {
+    public Rook(PlayerColor playerColor) {
+        super(playerColor);
 
-    private Point straightMove(Point cell) {
-        Point direction = new Point();
+        DragAndDrop dragAndDrop = new DragAndDrop(this);
 
-        if (cell.x == currentPosition.x) {
-            direction.x = 0;
-            direction.y = currentPosition.y > cell.y ? -1 : 1;
-        }
-        else if (cell.y == currentPosition.y) {
-            direction.x = currentPosition.x > cell.x ? -1 : 1;
-            direction.y = 0;
-        }
-
-        return direction;
+        this.addMouseListener(dragAndDrop);
+        this.addMouseMotionListener(dragAndDrop);
     }
 
     @Override
-    public boolean canMove(Point cell) {
-        if (isNotPlayerTurn() || isNotPlayerPiece()) {
+    public boolean canMove(Point to) {
+        if (isNotPlayerTurn() || isNotPlayerPiece(this.getColor())) {
             return false;
         }
 
         Piece[][] board = Game.getBoard();
 
         Point ghostRook = new Point(currentPosition.x, currentPosition.y);
-        Point direction = straightMove(cell);
+        Point direction = straightMove(currentPosition, to);
 
         if (direction.x == 0 && direction.y == 0) {
             return false;
         }
 
-        while (ghostRook.x != cell.x - direction.x || ghostRook.y != cell.y - direction.y) {
+        while (ghostRook.x != to.x - direction.x || ghostRook.y != to.y - direction.y) {
             ghostRook.x += direction.x;
             ghostRook.y += direction.y;
 
@@ -51,8 +42,8 @@ public class Rook extends Piece implements PieceImage {
             }
         }
 
-        if (board[cell.y][cell.x] != null) {
-            board[cell.y][cell.x].kill();
+        if (board[to.y][to.x] != null) {
+            board[to.y][to.x].kill();
         }
 
         return true;

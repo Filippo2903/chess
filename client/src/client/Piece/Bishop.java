@@ -1,35 +1,26 @@
 package client.Piece;
 
 import client.Game;
+import client.DragAndDrop;
 import gameUtils.PlayerColor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-public class Bishop extends Piece implements PieceImage {
-    public Bishop(PlayerColor playerColor, Point startPosition) {
-        super(playerColor, startPosition);
-    }
+public class Bishop extends Piece implements CheckPlayerMove, PieceImage, DiagonalMove {
+    public Bishop(PlayerColor playerColor) {
+        super(playerColor);
 
-    private Point diagonalMove(Point cell) {
-        Point direction = new Point();
+        DragAndDrop dragAndDrop = new DragAndDrop(this);
 
-        if (Math.abs(cell.x - currentPosition.x) == Math.abs(cell.y - currentPosition.y) ||
-                Math.abs(cell.x + currentPosition.x) == Math.abs(cell.y - currentPosition.y) ||
-                Math.abs(cell.x + currentPosition.x) == Math.abs(cell.y + currentPosition.y) ||
-                Math.abs(cell.x - currentPosition.x) == Math.abs(cell.y + currentPosition.y) ) {
-
-            direction.x = currentPosition.x - cell.x > 0 ? -1 : 1;
-            direction.y = currentPosition.y - cell.y > 0 ? -1 : 1;
-        }
-
-        return direction;
+        this.addMouseListener(dragAndDrop);
+        this.addMouseMotionListener(dragAndDrop);
     }
 
     @Override
-    public boolean canMove(Point cell) {
-        if (isNotPlayerTurn() || isNotPlayerPiece()) {
+    public boolean canMove(Point to) {
+        if (isNotPlayerTurn() || isNotPlayerPiece(this.getColor())) {
             return false;
         }
 
@@ -37,13 +28,13 @@ public class Bishop extends Piece implements PieceImage {
 
         Point ghostBishop = new Point(currentPosition.x, currentPosition.y);
 
-        Point direction = diagonalMove(cell);
+        Point direction = diagonalMove(currentPosition, to);
 
         if (direction.x == 0 && direction.y == 0) {
             return false;
         }
 
-        while (ghostBishop.x != cell.x - direction.x || ghostBishop.y != cell.y - direction.y) {
+        while (ghostBishop.x != to.x - direction.x || ghostBishop.y != to.y - direction.y) {
             ghostBishop.x += direction.x;
             ghostBishop.y += direction.y;
 
@@ -52,8 +43,8 @@ public class Bishop extends Piece implements PieceImage {
             }
         }
 
-        if (board[cell.y][cell.x] != null) {
-            board[cell.y][cell.x].kill();
+        if (board[to.y][to.x] != null) {
+            board[to.y][to.x].kill();
         }
 
         return true;

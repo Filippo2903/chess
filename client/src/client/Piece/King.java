@@ -1,66 +1,42 @@
 package client.Piece;
 
 import client.Game;
+import client.DragAndDrop;
 import gameUtils.PlayerColor;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
-public class King extends Piece implements PieceImage {
-    public King(PlayerColor playerColor, Point startPosition) {
-        super(playerColor, startPosition);
-    }
+public class King extends Piece implements CheckPlayerMove, PieceImage, DiagonalMove, StraightMove {
+    public King(PlayerColor playerColor) {
+        super(playerColor);
 
-    private Point straightMove(Point cell) {
-        Point direction = new Point();
+        DragAndDrop dragAndDrop = new DragAndDrop(this);
 
-        if (cell.x == currentPosition.x) {
-            direction.x = 0;
-            direction.y = currentPosition.y > cell.y ? -1 : 1;
-        }
-        else if (cell.y == currentPosition.y) {
-            direction.x = currentPosition.x > cell.x ? -1 : 1;
-            direction.y = 0;
-        }
-
-        return direction;
-    }
-
-    private Point diagonalMove(Point cell) {
-        Point direction = new Point();
-
-        if (Math.abs(cell.x - currentPosition.x) == Math.abs(cell.y - currentPosition.y) ||
-                Math.abs(cell.x + currentPosition.x) == Math.abs(cell.y - currentPosition.y) ||
-                Math.abs(cell.x + currentPosition.x) == Math.abs(cell.y + currentPosition.y) ||
-                Math.abs(cell.x - currentPosition.x) == Math.abs(cell.y + currentPosition.y) ) {
-
-            direction.x = currentPosition.x - cell.x > 0 ? -1 : 1;
-            direction.y = currentPosition.y - cell.y > 0 ? -1 : 1;
-        }
-
-        return direction;
+        this.addMouseListener(dragAndDrop);
+        this.addMouseMotionListener(dragAndDrop);
     }
 
     @Override
-    public boolean canMove(Point cell) {
-        if (isNotPlayerTurn() || isNotPlayerPiece()) {
+    public boolean canMove(Point to) {
+        if (isNotPlayerTurn() || isNotPlayerPiece(this.getColor())) {
             return false;
         }
 
         Piece[][] board = Game.getBoard();
 
-        Point direction = straightMove(cell);
+        Point direction = straightMove(currentPosition, to);
         if (direction.x == 0 && direction.y == 0) {
-            direction = diagonalMove(cell);
+            direction = diagonalMove(currentPosition, to);
             if (direction.x == 0 && direction.y == 0) {
                 return false;
             }
         }
 
-        if (currentPosition.x + direction.x == cell.x && currentPosition.y + direction.y == cell.y) {
-            if (board[cell.y][cell.x] != null) {
-                board[cell.y][cell.x].kill();
+        if (currentPosition.x + direction.x == to.x && currentPosition.y + direction.y == to.y) {
+            if (board[to.y][to.x] != null) {
+                board[to.y][to.x].kill();
             }
             return true;
         }

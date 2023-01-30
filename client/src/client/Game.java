@@ -4,7 +4,6 @@ import client.Piece.*;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
-import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import modal.ErrorPopup;
 import themes.CustomTheme;
@@ -21,9 +20,9 @@ public class Game {
     private static PlayerColor playerTurn;
 
     private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 510; // 570
-    private static final int DIM_CHESSBOARD = 8;
+    public static final int DIM_CHESSBOARD = 8;
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
-    private static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
+    public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
 
     // The board where all the pieces will be stored
     private static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
@@ -55,6 +54,38 @@ public class Game {
         board[cell.y][cell.x] = value;
     }
 
+    public void animatedMove(Point from, Point to, Piece piece) {
+        int fps = 60;
+
+        if (fps > CELL_SIZE)
+            throw new IllegalArgumentException("FPS cannot be greater than cell size");
+
+        double duration = 1;
+        int frame = (int) (fps * duration);
+
+        Point animationPosition = new Point(from.x * CELL_SIZE, from.y * CELL_SIZE);
+        Point goalAnimation = new Point(to.x * CELL_SIZE, to.y * CELL_SIZE);
+
+        int widthDifference = goalAnimation.x - animationPosition.x;
+        int heightDifference = goalAnimation.y - animationPosition.y;
+
+        double stepWidth = (double) widthDifference / frame;
+        double stepHeight = (double) heightDifference / frame;
+
+        for (int stepCount = 0; stepCount < frame; stepCount++) {
+            animationPosition.x += stepWidth;
+            animationPosition.y += stepHeight;
+
+            piece.setLocation(animationPosition);
+
+            try {
+                Thread.sleep((long) (duration * 100) / frame);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     /**
      * Move the enemy piece
      * @param packet Packet to get data from
@@ -71,22 +102,41 @@ public class Game {
             pieceTo.kill();
         }
 
-//        if (packet.type != null) {
-//            enemyPiece.kill();
-//
-//            enemyPiece = new Piece(packet.type, clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE, packet.to);
-//            chessboardPanel.add(enemyPiece);
-//            chessboardPanel.repaint();
-//        }
-
-        // Place the piece in the new position
-        editBoardCell(packet.to, enemyPiece);
-
         // Place the piece in front of the other
-        enemyPiece.getParent().setComponentZOrder(enemyPiece, 0);
+        chessboardPanel.setComponentZOrder(enemyPiece, 0);
 
-        // Move the piece
-        enemyPiece.animatedMove(packet.to);
+        // Animate the move of the piece
+        animatedMove(packet.from, packet.to, enemyPiece);
+
+        System.out.println(packet.type);
+        System.out.println(enemyPiece.getClass());
+
+        if (packet.type != enemyPiece.getClass()) {
+            System.out.println("Sivalletto");
+            enemyPiece.kill();
+
+            try {
+                enemyPiece = (Piece) packet.type
+                        .getDeclaredConstructor(PlayerColor.class)
+                        .newInstance(clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE);
+            } catch (Exception e) {
+                ErrorPopup.show(5);
+            }
+
+            enemyPiece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
+
+            try {
+                Method setImage = enemyPiece.getClass().getMethod("setImage");
+                setImage.invoke(enemyPiece);
+            } catch (Exception e) {
+                ErrorPopup.show(6);
+            }
+
+            chessboardPanel.add(enemyPiece);
+        }
+
+        // Change position of the piece
+        enemyPiece.setPosition(packet.to);
 
         // Change the player turn
         changePlayerTurn();
@@ -200,8 +250,7 @@ public class Game {
                 King.class, Bishop.class, Knight.class, Rook.class
         };
 
-        // Set cell size and fill the board
-        Piece.setCellSize(CELL_SIZE);
+        // Fill the board with null
         Arrays.stream(board).forEach(cell -> Arrays.fill(cell, null));
 
         // Create, paint and store every piece in the chessboard
@@ -213,20 +262,15 @@ public class Game {
                 // Add pieces
                 try {
                     piece = (Piece) pieceClass
-                                .getDeclaredConstructor(PlayerColor.class, Point.class)
-                                .newInstance(playerColor, new Point(x, playerColor == clientColor ? 7 : 0));
+                                .getDeclaredConstructor(PlayerColor.class)
+                                .newInstance(playerColor);
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
                          NoSuchMethodException e) {
                     ErrorPopup.show(5);
                 }
 
-                board[playerColor == clientColor ? 7 : 0][x] = piece;
-
                 assert piece != null;
-                piece.setBounds(
-                    x * CELL_SIZE, (playerColor == clientColor ? 7 : 0) * CELL_SIZE,
-                    CELL_SIZE, CELL_SIZE
-                );
+                piece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
 
                 try {
                     Method setImage = piece.getClass().getMethod("setImage");
@@ -234,18 +278,17 @@ public class Game {
                 } catch (Exception e) {
                     ErrorPopup.show(6);
                 }
+
+                piece.setPosition(new Point(x, (playerColor == clientColor ? 7 : 0)));
 
                 chessboardPanel.add(piece);
 
                 // Add pawns
-                piece = new Pawn(playerColor, new Point(x, playerColor == clientColor ? 6 : 1));
+                piece = new Pawn(playerColor);
 
                 board[playerColor == clientColor ? 6 : 1][x] = piece;
 
-                piece.setBounds(
-                        x * CELL_SIZE, (playerColor == clientColor ? 6 : 1) * CELL_SIZE,
-                        CELL_SIZE, CELL_SIZE
-                );
+                piece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
 
                 try {
                     Method setImage = piece.getClass().getMethod("setImage");
@@ -253,6 +296,8 @@ public class Game {
                 } catch (Exception e) {
                     ErrorPopup.show(6);
                 }
+
+                piece.setPosition(new Point(x, (playerColor == clientColor ? 6 : 1)));
 
                 chessboardPanel.add(piece);
             }
