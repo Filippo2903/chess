@@ -42,14 +42,17 @@ public class Piece extends JLabel {
     }
 
     public void move(Point to) {
-
         if (CanPlayerMove.isNotPlayerTurn() || CanPlayerMove.isNotPlayerPiece(this.getColor())) {
             return;
         }
 
         if (movement.canMove(currentPosition, to)) {
             Piece[][] board = Game.getBoard();
+
             if (board[to.y][to.x] != null) {
+                if (board[to.y][to.x].getColor() == pieceColor) {
+                    return;
+                }
                 board[to.y][to.x].kill();
             }
 
