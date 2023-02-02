@@ -1,107 +1,67 @@
 package client.Piece;
 
+import client.CanPlayerMove;
+import client.Client;
+import client.DragAndDrop;
 import client.Game;
-
+import gameUtils.Packet;
+import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 
 import javax.swing.*;
 
 import java.awt.*;
+import java.util.Objects;
 
-public abstract class Piece extends JLabel {
-    // Label cell size
-    protected static int cellSize = Game.CELL_SIZE;
+public class Piece extends JLabel {
+    private final int cellSize = Game.CELL_SIZE;
+
     public Point currentPosition = new Point(-1, -1);
-    protected final PlayerColor pieceColor;
+    private final PlayerColor pieceColor;
+    private final PieceType type;
+    private final Movement movement;
 
-//    protected boolean promoted = false;
-//    protected Class<?> typePromotion = null;
-//    private final Point newPosition = new Point();
-
-    public Piece(PlayerColor playerColor) {
+    public Piece(PlayerColor playerColor, PieceType type, Movement movement) {
         super();
 
         this.pieceColor = playerColor;
+
+        this.type = type;
+
+        this.movement = movement;
 
         this.setHorizontalAlignment(JLabel.LEFT);
         this.setVerticalAlignment(JLabel.TOP);
 
         this.setVisible(true);
+        
+        DragAndDrop dragAndDrop = new DragAndDrop(this);
+        
+        this.addMouseListener(dragAndDrop);
+        this.addMouseMotionListener(dragAndDrop);
+    }
 
-//        MouseAdapter mouseAdapter = new MouseAdapter() {
-//            boolean undo;
-//
-//            @Override
-//            public void mousePressed(MouseEvent e) {
-//                if (e.getButton() == MouseEvent.BUTTON1) {
-//                    undo = false;
-//                    Piece.this.getParent().setComponentZOrder(Piece.this, 0);
-//                } else {
-//                    undo = true;
-//
-//                    Piece.this.setPosition(Piece.this.currentPosition);
-//                }
-//            }
-//
-//            @Override
-//            public void mouseDragged(MouseEvent e) {
-//                if (undo) return;
-//
-//                int x = (int) Math.floor(((double) Piece.this.newPosition.x + (cellSize >> 1)) / cellSize);
-//                int y = (int) Math.floor(((double) Piece.this.newPosition.y + (cellSize >> 1)) / cellSize);
-//
-//                if (x < 0 || x > 7 || y < 0 || y > 7) {
-//                    undo = true;
-//
-//                    Piece.this.setPosition(Piece.this.currentPosition);
-//                }
-//
-//                Piece.this.newPosition.x = Piece.this.getLocation().x + e.getX() - (cellSize >> 1);
-//                Piece.this.newPosition.y = Piece.this.getLocation().y + e.getY() - (cellSize >> 1);
-//                Piece.this.setLocation(Piece.this.newPosition.x, Piece.this.newPosition.y);
-//            }
-//
-//            @Override
-//            public void mouseReleased(MouseEvent e) {
-//                if (undo) return;
-//
-//                Point to = new Point(
-//                        (Piece.this.newPosition.x + (cellSize >> 1)) / cellSize,
-//                        (Piece.this.newPosition.y + (cellSize >> 1)) / cellSize
-//                );
-//
-//                if (canMove(to)) {
-//                    Point prevPosition = new Point(currentPosition.x, currentPosition.y);
-//
-//                    Piece.this.setPosition(to);
-//
-//                    if (promoted) { // ! DEBUG THIS !
-//                        Client.sendMove(
-//                            new Packet(
-//                                prevPosition,
-//                                currentPosition,
-//                                    typePromotion
-//                            )
-//                        );
-//                    } else {
-//                        Client.sendMove(new Packet(prevPosition, currentPosition));
-//                    }
-//
-//                    Thread recieveThread = new Thread(Client::receiveMove);
-//                    recieveThread.start();
-//
-//                    Game.changePlayerTurn();
-//
-//                    return;
-//                }
-//
-//                // Modify the position
-//                Piece.this.setPosition(Piece.this.currentPosition);
-//            }
-//        };
-//
-//        this.addMouseListener(mouseAdapter);
-//        this.addMouseMotionListener(mouseAdapter);
+    public void move(Point to) {
+
+        if (CanPlayerMove.isNotPlayerTurn() || CanPlayerMove.isNotPlayerPiece(this.getColor())) {
+            return;
+        }
+
+        if (movement.canMove(currentPosition, to)) {
+            Piece[][] board = Game.getBoard();
+            if (board[to.y][to.x] != null) {
+                board[to.y][to.x].kill();
+            }
+
+            Client.sendMove(new Packet(currentPosition, to));
+
+            this.setPosition(to);
+
+            Thread recieveThread = new Thread(Client::receiveMove);
+            recieveThread.start();
+
+            Game.changePlayerTurn();
+        }
     }
 
     public void setPosition(Point newPosition) {
@@ -116,8 +76,6 @@ public abstract class Piece extends JLabel {
         currentPosition = newPosition;
     }
 
-    public abstract boolean canMove(Point cell);
-
     public void kill() {
         Game.editBoardCell(currentPosition, null);
 
@@ -129,4 +87,15 @@ public abstract class Piece extends JLabel {
     public PlayerColor getColor() {
         return pieceColor;
     }
+
+	public Image getImage() {
+		String path = "assets/" + pieceColor + type + ".png";
+
+        return new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
+	}
+
+	public void setImage() {
+        Image icon = getImage();
+		this.setIcon(new ImageIcon(icon.getScaledInstance(cellSize, cellSize, Image.SCALE_SMOOTH)));
+	}
 }

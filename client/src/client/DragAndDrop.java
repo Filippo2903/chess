@@ -1,7 +1,6 @@
 package client;
 
 import client.Piece.Piece;
-import gameUtils.Packet;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -14,7 +13,7 @@ public class DragAndDrop extends MouseAdapter {
     private final Point newPosition = new Point();
 
     public DragAndDrop(Piece piece) {
-        this.piece = piece;
+    	this.piece = piece;
     }
 
     @Override
@@ -56,20 +55,7 @@ public class DragAndDrop extends MouseAdapter {
                 (newPosition.y + (CELL_SIZE >> 1)) / CELL_SIZE
         );
 
-        if (piece.canMove(to)) {
-            Point prevPosition = new Point(piece.currentPosition.x, piece.currentPosition.y);
-
-            piece.setPosition(to);
-
-            Client.sendMove(new Packet(prevPosition, piece.currentPosition, piece.getClass()));
-
-            Thread recieveThread = new Thread(Client::receiveMove);
-            recieveThread.start();
-
-            Game.changePlayerTurn();
-
-            return;
-        }
+        piece.move(to);
 
         // Modify the position
         piece.setPosition(piece.currentPosition);

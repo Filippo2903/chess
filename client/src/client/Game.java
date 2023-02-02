@@ -4,13 +4,13 @@ import client.Piece.*;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
+import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import modal.ErrorPopup;
 import themes.CustomTheme;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
@@ -107,33 +107,6 @@ public class Game {
 
         // Animate the move of the piece
         animatedMove(packet.from, packet.to, enemyPiece);
-
-        System.out.println(packet.type);
-        System.out.println(enemyPiece.getClass());
-
-        if (packet.type != enemyPiece.getClass()) {
-            System.out.println("Sivalletto");
-            enemyPiece.kill();
-
-            try {
-                enemyPiece = (Piece) packet.type
-                        .getDeclaredConstructor(PlayerColor.class)
-                        .newInstance(clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE);
-            } catch (Exception e) {
-                ErrorPopup.show(5);
-            }
-
-            enemyPiece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
-
-            try {
-                Method setImage = enemyPiece.getClass().getMethod("setImage");
-                setImage.invoke(enemyPiece);
-            } catch (Exception e) {
-                ErrorPopup.show(6);
-            }
-
-            chessboardPanel.add(enemyPiece);
-        }
 
         // Change position of the piece
         enemyPiece.setPosition(packet.to);
@@ -245,57 +218,61 @@ public class Game {
     private void initPieces() {
 
         /* Paint all the pieces in the board */
-        final Class<?>[] startRow = {
-                Rook.class, Knight.class, Bishop.class, Queen.class,
-                King.class, Bishop.class, Knight.class, Rook.class
+        final Movement[] startRow = {
+                new StraightMovement(true),
+                new KnightMovement(),
+                new DiagonalMovement(true),
+                new AllDirectionMovement(true),
+                new AllDirectionMovement(false),
+                new DiagonalMovement(true),
+                new KnightMovement(),
+                new StraightMovement(true)
+        };
+
+        final PieceType[] startRowType = {
+                PieceType.ROOK,
+                PieceType.KNIGHT,
+                PieceType.BISHOP,
+                PieceType.QUEEN,
+                PieceType.KING,
+                PieceType.BISHOP,
+                PieceType.KNIGHT,
+                PieceType.ROOK
         };
 
         // Fill the board with null
         Arrays.stream(board).forEach(cell -> Arrays.fill(cell, null));
 
         // Create, paint and store every piece in the chessboard
-        Piece piece = null;
+        Piece piece;
+        Movement pieceMovement;
+        PieceType pieceType;
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
-                Class<?> pieceClass = startRow[x];
+                pieceMovement = startRow[x];
+                pieceType = startRowType[x];
 
                 // Add pieces
-                try {
-                    piece = (Piece) pieceClass
-                                .getDeclaredConstructor(PlayerColor.class)
-                                .newInstance(playerColor);
-                } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                         NoSuchMethodException e) {
-                    ErrorPopup.show(5);
-                }
+                piece = new Piece(playerColor, pieceType, pieceMovement);
 
-                assert piece != null;
+                board[playerColor == clientColor ? 7 : 0][x] = piece;
+
                 piece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
 
-                try {
-                    Method setImage = piece.getClass().getMethod("setImage");
-                    setImage.invoke(piece);
-                } catch (Exception e) {
-                    ErrorPopup.show(6);
-                }
+                piece.setImage();
 
                 piece.setPosition(new Point(x, (playerColor == clientColor ? 7 : 0)));
 
                 chessboardPanel.add(piece);
 
                 // Add pawns
-                piece = new Pawn(playerColor);
+                piece = new Piece(playerColor, PieceType.PAWN, new PawnMovement());
 
                 board[playerColor == clientColor ? 6 : 1][x] = piece;
 
                 piece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
 
-                try {
-                    Method setImage = piece.getClass().getMethod("setImage");
-                    setImage.invoke(piece);
-                } catch (Exception e) {
-                    ErrorPopup.show(6);
-                }
+                piece.setImage();
 
                 piece.setPosition(new Point(x, (playerColor == clientColor ? 6 : 1)));
 
