@@ -1,6 +1,7 @@
-package client.Piece;
+package client.Movements;
 
 import client.Game;
+import client.Piece;
 
 import java.awt.*;
 

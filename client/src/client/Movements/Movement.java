@@ -1,4 +1,4 @@
-package client.Piece;
+package client.Movements;
 
 import java.awt.Point;
 

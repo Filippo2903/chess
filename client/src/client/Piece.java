@@ -1,12 +1,10 @@
-package client.Piece;
+package client;
 
-import client.CanPlayerMove;
-import client.Client;
-import client.DragAndDrop;
-import client.Game;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
+
+import client.Movements.Movement;
 
 import javax.swing.*;
 

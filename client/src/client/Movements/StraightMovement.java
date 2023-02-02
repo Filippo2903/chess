@@ -1,32 +1,30 @@
-package client.Piece;
-
-import client.Game;
+package client.Movements;
 
 import java.awt.*;
 
-public class DiagonalMovement implements Movement {
+public class StraightMovement implements Movement {
     private final boolean linearMovement;
-    public DiagonalMovement(boolean linearMovement) {
+
+    public StraightMovement(boolean linearMovement) {
         this.linearMovement = linearMovement;
     }
-
     /**
-     * @return the direction of the move, return a Point(0, 0) if the move is not diagonal
+     * @return the direction of the move, return a Point(0, 0) if the move is not straight
      */
-    private Point diagonalMove(Point from, Point to) {
+    private Point straightMove(Point from, Point to) {
         Point direction = new Point(0, 0);
 
         if (from.x == to.x && from.y == to.y) {
             return direction;
         }
 
-        if (Math.abs(to.x - from.x) == Math.abs(to.y - from.y) ||
-                Math.abs(to.x + from.x) == Math.abs(to.y - from.y) ||
-                Math.abs(to.x + from.x) == Math.abs(to.y + from.y) ||
-                Math.abs(to.x - from.x) == Math.abs(to.y + from.y) ) {
-
-            direction.x = from.x > to.x ? -1 : 1;
+        if (to.x == from.x) {
+            direction.x = 0;
             direction.y = from.y > to.y ? -1 : 1;
+        }
+        else if (to.y == from.y) {
+            direction.x = from.x > to.x ? -1 : 1;
+            direction.y = 0;
         }
 
         return direction;
@@ -34,7 +32,7 @@ public class DiagonalMovement implements Movement {
 
     @Override
     public boolean canMove(Point from, Point to) {
-        Point direction = diagonalMove(from, to);
+        Point direction = straightMove(from, to);
 
         if (direction.x == 0 && direction.y == 0) {
             return false;

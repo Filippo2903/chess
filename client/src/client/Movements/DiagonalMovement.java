@@ -1,32 +1,30 @@
-package client.Piece;
-
-import client.Game;
+package client.Movements;
 
 import java.awt.*;
 
-public class StraightMovement implements Movement {
+public class DiagonalMovement implements Movement {
     private final boolean linearMovement;
-
-    public StraightMovement(boolean linearMovement) {
+    public DiagonalMovement(boolean linearMovement) {
         this.linearMovement = linearMovement;
     }
+
     /**
-     * @return the direction of the move, return a Point(0, 0) if the move is not straight
+     * @return the direction of the move, return a Point(0, 0) if the move is not diagonal
      */
-    private Point straightMove(Point from, Point to) {
+    private Point diagonalMove(Point from, Point to) {
         Point direction = new Point(0, 0);
 
         if (from.x == to.x && from.y == to.y) {
             return direction;
         }
 
-        if (to.x == from.x) {
-            direction.x = 0;
-            direction.y = from.y > to.y ? -1 : 1;
-        }
-        else if (to.y == from.y) {
+        if (Math.abs(to.x - from.x) == Math.abs(to.y - from.y) ||
+                Math.abs(to.x + from.x) == Math.abs(to.y - from.y) ||
+                Math.abs(to.x + from.x) == Math.abs(to.y + from.y) ||
+                Math.abs(to.x - from.x) == Math.abs(to.y + from.y) ) {
+
             direction.x = from.x > to.x ? -1 : 1;
-            direction.y = 0;
+            direction.y = from.y > to.y ? -1 : 1;
         }
 
         return direction;
@@ -34,7 +32,7 @@ public class StraightMovement implements Movement {
 
     @Override
     public boolean canMove(Point from, Point to) {
-        Point direction = straightMove(from, to);
+        Point direction = diagonalMove(from, to);
 
         if (direction.x == 0 && direction.y == 0) {
             return false;
@@ -44,8 +42,8 @@ public class StraightMovement implements Movement {
             if (LinearMovement.isThereAnObstacle(from, to, direction)) {
                 return false;
             }
-            from.x = to.x - direction.x;
-            from.y = to.y - direction.y;
+
+            return true;
         }
 
         if (from.x + direction.x != to.x || from.y + direction.y != to.y) {

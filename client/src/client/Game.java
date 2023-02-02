@@ -1,17 +1,14 @@
 package client;
 
-import client.Piece.*;
-
+import client.Movements.*;
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
-import modal.ErrorPopup;
 import themes.CustomTheme;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Objects;
 
