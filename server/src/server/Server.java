@@ -2,6 +2,7 @@ package server;
 
 import gameUtils.Packet;
 import gameUtils.PlayerColor;
+import gameUtils.SpecialMove;
 import modal.ErrorPopup;
 import modal.Theme;
 
@@ -32,6 +33,10 @@ public class Server {
 
         if (!packet.continuePlaying) {
             return false;
+        }
+
+        if (packet.specialMove == SpecialMove.PROMOTE) {
+            // TODO richiesta a client del tipo in cui promuovere
         }
 
         try {

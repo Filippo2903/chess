@@ -24,10 +24,10 @@ public class Game {
 
     // The board where all the pieces will be stored
     private static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
-
     private final JFrame window = new JFrame();
-
     private JPanel chessboardPanel;
+    private static final JLabel fromCell = new JLabel(),
+                         toCell = new JLabel();
 
     public static PlayerColor getPlayerColor() {
         return clientColor;
@@ -52,42 +52,17 @@ public class Game {
         board[cell.y][cell.x] = value;
     }
 
-    /**
-     * Move a piece smoothly
-     * @param from Starting cell
-     * @param to Arrival cell
-     * @param piece Piece to move
-     */
-    public static void animatedMove(Point from, Point to, Piece piece) {
-        int fps = 60;
-
-        if (fps > CELL_SIZE)
-            throw new IllegalArgumentException("FPS cannot be greater than cell size");
-
-        double duration = 1;
-        int frame = (int) (fps * duration);
-
-        Point animationPosition = new Point(from.x * CELL_SIZE, from.y * CELL_SIZE);
-        Point goalAnimation = new Point(to.x * CELL_SIZE, to.y * CELL_SIZE);
-
-        int widthDifference = goalAnimation.x - animationPosition.x;
-        int heightDifference = goalAnimation.y - animationPosition.y;
-
-        double stepWidth = (double) widthDifference / frame;
-        double stepHeight = (double) heightDifference / frame;
-
-        for (int stepCount = 0; stepCount < frame; stepCount++) {
-            animationPosition.x += stepWidth;
-            animationPosition.y += stepHeight;
-
-            piece.setLocation(animationPosition);
-
-            try {
-                Thread.sleep((long) (duration * 100) / frame);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    public static void setFromCellVisible() {
+        fromCell.setVisible(true);
+    }
+    public static void setToCellVisible() {
+        toCell.setVisible(true);
+    }
+    public static void setPositionFromCell(Point cell) {
+        fromCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
+    }
+    public static void setPositionToCell(Point cell) {
+        toCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
 
     /**
@@ -103,10 +78,8 @@ public class Game {
         editBoardCell(packet.from, null);
 
         if (packet.specialMove == SpecialMove.NONE) {
-            // If the target cell is a piece, kill it
-            Piece pieceTo = board[packet.to.y][packet.to.x];
-            if (pieceTo != null) {
-                pieceTo.kill();
+            if (board[packet.to.y][packet.to.x] != null) {
+                board[packet.to.y][packet.to.x].kill();
             }
         }
 
@@ -119,26 +92,37 @@ public class Game {
             final Point ROOK_START_POSITION = new Point(7, 0);
             final Point ROOK_ARRIVAL_POSITION = new Point(5, 0);
 
-            animatedMove(ROOK_START_POSITION, ROOK_ARRIVAL_POSITION, board[ROOK_START_POSITION.y][ROOK_START_POSITION.x]);
-            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
+            Thread animatedMove = new Thread(()-> {
+                board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
+            });
+
+            animatedMove.start();
         }
 
         else if (packet.specialMove == SpecialMove.QUEENSIDE_CASTLE) {
             final Point ROOK_START_POSITION = new Point(0, 0);
             final Point ROOK_ARRIVAL_POSITION = new Point(3, 0);
 
-            animatedMove(ROOK_START_POSITION, ROOK_ARRIVAL_POSITION, board[ROOK_START_POSITION.y][ROOK_START_POSITION.x]);
-            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
+            Thread animatedMove = new Thread(()-> {
+                board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
+            });
+
+            animatedMove.start();
         }
 
         // Place the piece in front of the other
         chessboardPanel.setComponentZOrder(enemyPiece, 0);
 
-        // Animate the move of the piece
-        animatedMove(packet.from, packet.to, enemyPiece);
+        Thread animatedMove = new Thread(()-> {
+            enemyPiece.animatedMove(packet.to);
+        });
 
-        // Change position of the piece
-        enemyPiece.setPosition(packet.to);
+        animatedMove.start();
+
+        fromCell.setLocation(packet.from.x * CELL_SIZE, packet.from.y * CELL_SIZE);
+        toCell.setLocation(packet.to.x * CELL_SIZE, packet.to.y * CELL_SIZE);
+        setFromCellVisible();
+        setToCellVisible();
 
         // Change the player turn
         changePlayerTurn();
@@ -177,8 +161,6 @@ public class Game {
     private void displayWindow() {
         window.setTitle("Chess");
 
-//        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         window.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -196,7 +178,7 @@ public class Game {
 
         window.setSize(new Dimension(WINDOW_WIDTH + 19, WINDOW_HEIGHT + 39));
 
-        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("icon.png"))).getImage();
+        Image icon = new ImageIcon(Objects.requireNonNull(ClassLoader.getSystemResource("icon.png"))).getImage();
 
         window.setIconImage(icon);
 
@@ -207,6 +189,23 @@ public class Game {
 
         // TODO matchmaking
         //initPlayButton();
+    }
+
+    private void initHighlightedCells() {
+        Color HIGHLIGHTED_CELL = new Color(237, 255, 33, 180);
+
+        fromCell.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
+        fromCell.setBackground(HIGHLIGHTED_CELL);
+        fromCell.setOpaque(true);
+        fromCell.setVisible(false);
+
+        toCell.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
+        toCell.setBackground(HIGHLIGHTED_CELL);
+        toCell.setOpaque(true);
+        toCell.setVisible(false);
+
+        chessboardPanel.add(fromCell);
+        chessboardPanel.add(toCell);
     }
 
     /**
@@ -315,6 +314,7 @@ public class Game {
 
         initChessboard();
         initPieces();
+        initHighlightedCells();
     }
 
 

@@ -39,6 +39,46 @@ public class Piece extends JLabel {
         this.addMouseMotionListener(dragAndDrop);
     }
 
+
+    /**
+     * Move a piece smoothly
+     *
+     * @param to Arrival cell
+     */
+    public void animatedMove(Point to) {
+        int fps = 60;
+
+        if (fps > Game.CELL_SIZE)
+            throw new IllegalArgumentException("FPS cannot be greater than cell size");
+
+        double duration = 1;
+        int frame = (int) (fps * duration);
+
+        Point animationPosition = new Point(currentPosition.x * Game.CELL_SIZE, currentPosition.y * Game.CELL_SIZE);
+        Point goalAnimation = new Point(to.x * Game.CELL_SIZE, to.y * Game.CELL_SIZE);
+
+        int widthDifference = goalAnimation.x - animationPosition.x;
+        int heightDifference = goalAnimation.y - animationPosition.y;
+
+        double stepWidth = (double) widthDifference / frame;
+        double stepHeight = (double) heightDifference / frame;
+
+        for (int stepCount = 0; stepCount < frame; stepCount++) {
+            animationPosition.x += stepWidth;
+            animationPosition.y += stepHeight;
+
+            this.setLocation(animationPosition);
+
+            try {
+                Thread.sleep((long) (duration * 100) / frame);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        this.setPosition(to);
+    }
+
     public void move(Point to) {
         if (CheckPlayerMove.isNotPlayerTurn() || CheckPlayerMove.isNotPlayerPiece(this.getColor())) {
             this.setPosition(currentPosition);
@@ -52,6 +92,11 @@ public class Piece extends JLabel {
 
         for (Movement movement : type.movements) {
             if (movement.canMove(currentPosition, to)) {
+                Game.setFromCellVisible();
+                Game.setToCellVisible();
+                Game.setPositionFromCell(currentPosition);
+                Game.setPositionToCell(to);
+
                 Piece[][] board = Game.getBoard();
 
                 if (movement.getClass() == EnPassant.class) {
@@ -70,7 +115,11 @@ public class Piece extends JLabel {
                             board[ROOK_START_POSITION.y][ROOK_START_POSITION.x]
                     );
 
-                    board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
+                    Thread animatedMove = new Thread(()-> {
+                        board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
+                    });
+
+                    animatedMove.start();
 
                     Client.sendMove(new Packet(currentPosition, to, SpecialMove.KINGSIDE_CASTLE));
                 }
@@ -79,7 +128,11 @@ public class Piece extends JLabel {
                     final Point ROOK_START_POSITION = new Point(0, 7);
                     final Point ROOK_ARRIVAL_POSITION = new Point(3, 7);
 
-                    board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
+                    Thread animatedMove = new Thread(()-> {
+                        board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
+                    });
+
+                    animatedMove.start();
 
                     Client.sendMove(new Packet(currentPosition, to, SpecialMove.QUEENSIDE_CASTLE));
                 }
@@ -141,8 +194,10 @@ public class Piece extends JLabel {
         return hasMoved;
     }
 
-	public void setImage() {
-        URL path = ClassLoader.getSystemResource("" + pieceColor + type + ".png");
+    public void setImage() {
+        String iconName = pieceColor.toString().toLowerCase() + type.toString().substring(0, 1).toUpperCase() + type.toString().substring(1).toLowerCase() + ".png";
+
+        URL path = ClassLoader.getSystemResource(iconName);
         if (path == null) {
             ErrorPopup.show(7);
             System.exit(-1);
@@ -151,5 +206,5 @@ public class Piece extends JLabel {
         Image icon = new ImageIcon(path).getImage();
 
         this.setIcon(new ImageIcon(icon.getScaledInstance(Game.CELL_SIZE, Game.CELL_SIZE, Image.SCALE_SMOOTH)));
-	}
+    }
 }
