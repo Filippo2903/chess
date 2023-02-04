@@ -14,14 +14,10 @@ public class DiagonalMovement implements Movement {
     private Point diagonalMove(Point from, Point to) {
         Point direction = new Point(0, 0);
 
-        if (from.x == to.x && from.y == to.y) {
-            return direction;
-        }
-
         if (Math.abs(to.x - from.x) == Math.abs(to.y - from.y) ||
-                Math.abs(to.x + from.x) == Math.abs(to.y - from.y) ||
-                Math.abs(to.x + from.x) == Math.abs(to.y + from.y) ||
-                Math.abs(to.x - from.x) == Math.abs(to.y + from.y) ) {
+            Math.abs(to.x + from.x) == Math.abs(to.y - from.y) ||
+            Math.abs(to.x + from.x) == Math.abs(to.y + from.y) ||
+            Math.abs(to.x - from.x) == Math.abs(to.y + from.y)) {
 
             direction.x = from.x > to.x ? -1 : 1;
             direction.y = from.y > to.y ? -1 : 1;

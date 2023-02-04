@@ -2,7 +2,7 @@ package client;
 
 import gameUtils.PlayerColor;
 
-public class CanPlayerMove {
+public class CheckPlayerMove {
     /**
      * Check if the piece the player is trying to move is his or not
      * @param color color of the piece

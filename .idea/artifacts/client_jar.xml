@@ -3,8 +3,9 @@
     <output-path>$PROJECT_DIR$/out/artifacts/client_jar</output-path>
     <root id="archive" name="client.jar">
       <element id="module-output" name="client" />
-      <element id="module-output" name="chess" />
+      <element id="module-output" name="utils" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/flatlaf-3.0.jar" path-in-jar="/" />
+      <element id="dir-copy" path="$PROJECT_DIR$/client/assets" />
     </root>
   </artifact>
 </component>

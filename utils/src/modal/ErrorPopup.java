@@ -6,10 +6,10 @@ import javax.swing.JOptionPane;
  * Setup
  * 0-99
  *
- * Connessione
+ * Connection
  * 100-199
  *
- * Comunicazione
+ * Communication
  * 200-299
  *
  * IO
@@ -17,8 +17,8 @@ import javax.swing.JOptionPane;
  */
 
 public class ErrorPopup {
-    static final String message = "Codice Errore: 0x%d";
-    static final String title = "Errore";
+    static final String message = "Error Code: 0x%d";
+    static final String title = "Error";
 
     public static void show(String title, String message) {
         JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);

@@ -1,4 +1,4 @@
-package gameUtils;
+package client;
 
 import client.Movements.*;
 

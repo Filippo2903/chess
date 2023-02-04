@@ -2,7 +2,7 @@ package client.Movements;
 
 import client.Game;
 import client.Piece;
-import gameUtils.PieceType;
+import client.PieceType;
 
 import java.awt.Point;
 
@@ -12,8 +12,8 @@ public class EnPassant implements Movement {
         final int EN_PASSANT_ROW = 3;
         final int START_ROW = 1;
 
-        final int ENEMY_FROM = 0;
-        final int ENEMY_TO = 1;
+        final int FROM = 0;
+        final int TO = 1;
 
         Piece[][] board = Game.getBoard();
         Point[] enemyMove = Game.getEnemyMove();
@@ -28,9 +28,9 @@ public class EnPassant implements Movement {
                 from.y == EN_PASSANT_ROW &&
                 board[to.y + 1][to.x] != null &&
                 board[to.y + 1][to.x].getType() == PieceType.PAWN &&
-                enemyMove[ENEMY_FROM].x == to.x &&
-                enemyMove[ENEMY_FROM].y == START_ROW &&
-                enemyMove[ENEMY_TO].y == EN_PASSANT_ROW) {
+                enemyMove[FROM].x == to.x &&
+                enemyMove[FROM].y == START_ROW &&
+                enemyMove[TO].y == EN_PASSANT_ROW) {
 
                 return true;
             }

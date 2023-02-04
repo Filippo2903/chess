@@ -1,14 +1,11 @@
 package client;
 
-import client.Movements.*;
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
-import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import gameUtils.SpecialMove;
 import themes.CustomTheme;
 
-import javax.sound.midi.SysexMessage;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
@@ -111,16 +108,22 @@ public class Game {
             if (pieceTo != null) {
                 pieceTo.kill();
             }
-        } else if (packet.specialMove == SpecialMove.EN_PASSANT) {
+        }
+
+        else if (packet.specialMove == SpecialMove.EN_PASSANT) {
             Piece eatenPiece = board[packet.to.y - 1][packet.to.x];
             eatenPiece.kill();
-        } else if (packet.specialMove == SpecialMove.KINGSIDE_CASTLE) {
+        }
+
+        else if (packet.specialMove == SpecialMove.KINGSIDE_CASTLE) {
             final Point ROOK_START_POSITION = new Point(7, 0);
             final Point ROOK_ARRIVAL_POSITION = new Point(5, 0);
 
             animatedMove(ROOK_START_POSITION, ROOK_ARRIVAL_POSITION, board[ROOK_START_POSITION.y][ROOK_START_POSITION.x]);
             board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
-        } else if (packet.specialMove == SpecialMove.QUEENSIDE_CASTLE) {
+        }
+
+        else if (packet.specialMove == SpecialMove.QUEENSIDE_CASTLE) {
             final Point ROOK_START_POSITION = new Point(0, 0);
             final Point ROOK_ARRIVAL_POSITION = new Point(3, 0);
 
@@ -174,23 +177,22 @@ public class Game {
     private void displayWindow() {
         window.setTitle("Chess");
 
-        // TODO uncommenta
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-//        window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-//        window.addWindowListener(new java.awt.event.WindowAdapter() {
-//            @Override
-//            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-//                if (JOptionPane.showConfirmDialog(window,
-//                        "Sei sicuro di voler abbandonare la partita?", "Conferma chiusura",
-//                        JOptionPane.YES_NO_OPTION,
-//                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
-//
-//                    System.exit(0);
-//                }
-//            }
-//        });
+        window.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                if (JOptionPane.showConfirmDialog(window,
+                        "Are you sure?", "Quit",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+
+                    System.exit(0);
+                }
+            }
+        });
 
         window.setSize(new Dimension(WINDOW_WIDTH + 19, WINDOW_HEIGHT + 39));
 
@@ -266,7 +268,6 @@ public class Game {
 
         // Create, paint and store every piece in the chessboard
         Piece piece;
-        Movement pieceMovement;
         PieceType pieceType;
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {

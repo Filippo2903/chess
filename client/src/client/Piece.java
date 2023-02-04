@@ -5,14 +5,15 @@ import client.Movements.KingsideCastle;
 import client.Movements.Movement;
 import client.Movements.QueensideCastle;
 import gameUtils.Packet;
-import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import gameUtils.SpecialMove;
+import modal.ErrorPopup;
 
 import javax.swing.*;
 
-import java.awt.*;
-import java.util.Objects;
+import java.awt.Point;
+import java.awt.Image;
+import java.net.URL;
 
 public class Piece extends JLabel {
     public Point currentPosition = new Point(-1, -1);
@@ -39,7 +40,13 @@ public class Piece extends JLabel {
     }
 
     public void move(Point to) {
-        if (CanPlayerMove.isNotPlayerTurn() || CanPlayerMove.isNotPlayerPiece(this.getColor())) {
+        if (CheckPlayerMove.isNotPlayerTurn() || CheckPlayerMove.isNotPlayerPiece(this.getColor())) {
+            this.setPosition(currentPosition);
+            return;
+        }
+
+        if (to.x == currentPosition.x && to.y == currentPosition.y) {
+            this.setPosition(currentPosition);
             return;
         }
 
@@ -97,9 +104,11 @@ public class Piece extends JLabel {
 
                 hasMoved = true;
 
-                break;
+                return;
             }
         }
+
+        this.setPosition(currentPosition);
     }
 
     public void setPosition(Point newPosition) {
@@ -133,10 +142,14 @@ public class Piece extends JLabel {
     }
 
 	public void setImage() {
-        String path = "assets/" + pieceColor + type + ".png";
+        URL path = ClassLoader.getSystemResource("" + pieceColor + type + ".png");
+        if (path == null) {
+            ErrorPopup.show(7);
+            System.exit(-1);
+        }
 
-        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
+        Image icon = new ImageIcon(path).getImage();
 
-		this.setIcon(new ImageIcon(icon.getScaledInstance(Game.CELL_SIZE, Game.CELL_SIZE, Image.SCALE_SMOOTH)));
+        this.setIcon(new ImageIcon(icon.getScaledInstance(Game.CELL_SIZE, Game.CELL_SIZE, Image.SCALE_SMOOTH)));
 	}
 }
