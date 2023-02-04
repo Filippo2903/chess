@@ -5,8 +5,10 @@ import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
+import gameUtils.SpecialMove;
 import themes.CustomTheme;
 
+import javax.sound.midi.SysexMessage;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
@@ -51,7 +53,13 @@ public class Game {
         board[cell.y][cell.x] = value;
     }
 
-    public void animatedMove(Point from, Point to, Piece piece) {
+    /**
+     * Move a piece smoothly
+     * @param from Starting cell
+     * @param to Arrival cell
+     * @param piece Piece to move
+     */
+    public static void animatedMove(Point from, Point to, Piece piece) {
         int fps = 60;
 
         if (fps > CELL_SIZE)
@@ -93,10 +101,27 @@ public class Game {
         // Delete previous position
         editBoardCell(packet.from, null);
 
-        // If the target cell is a piece, kill it
-        Piece pieceTo = board[packet.to.y][packet.to.x];
-        if (pieceTo != null) {
-            pieceTo.kill();
+        if (packet.specialMove == SpecialMove.NONE) {
+            // If the target cell is a piece, kill it
+            Piece pieceTo = board[packet.to.y][packet.to.x];
+            if (pieceTo != null) {
+                pieceTo.kill();
+            }
+        } else if (packet.specialMove == SpecialMove.EN_PASSANT) {
+            Piece eatenPiece = board[packet.to.y - 1][packet.to.x];
+            eatenPiece.kill();
+        } else if (packet.specialMove == SpecialMove.KINGSIDE_CASTLE) {
+            final Point ROOK_START_POSITION = new Point(7, 0);
+            final Point ROOK_ARRIVAL_POSITION = new Point(5, 0);
+
+            animatedMove(ROOK_START_POSITION, ROOK_ARRIVAL_POSITION, board[ROOK_START_POSITION.y][ROOK_START_POSITION.x]);
+            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
+        } else if (packet.specialMove == SpecialMove.QUEENSIDE_CASTLE) {
+            final Point ROOK_START_POSITION = new Point(0, 0);
+            final Point ROOK_ARRIVAL_POSITION = new Point(3, 0);
+
+            animatedMove(ROOK_START_POSITION, ROOK_ARRIVAL_POSITION, board[ROOK_START_POSITION.y][ROOK_START_POSITION.x]);
+            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
         }
 
         // Place the piece in front of the other
@@ -140,6 +165,8 @@ public class Game {
      */
     private void displayWindow() {
         window.setTitle("Chess");
+
+        // TODO uncommenta
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 //        window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -215,18 +242,7 @@ public class Game {
     private void initPieces() {
 
         /* Paint all the pieces in the board */
-        final Movement[] startRow = {
-                new StraightMovement(true),
-                new KnightMovement(),
-                new DiagonalMovement(true),
-                new AllDirectionMovement(true),
-                new AllDirectionMovement(false),
-                new DiagonalMovement(true),
-                new KnightMovement(),
-                new StraightMovement(true)
-        };
-
-        final PieceType[] startRowType = {
+        final PieceType[] startRow = {
                 PieceType.ROOK,
                 PieceType.KNIGHT,
                 PieceType.BISHOP,
@@ -250,7 +266,7 @@ public class Game {
                 pieceType = startRowType[x];
 
                 // Add pieces
-                piece = new Piece(playerColor, pieceType, pieceMovement);
+                piece = new Piece(playerColor, pieceType);
 
                 board[playerColor == clientColor ? 7 : 0][x] = piece;
 
@@ -263,7 +279,7 @@ public class Game {
                 chessboardPanel.add(piece);
 
                 // Add pawns
-                piece = new Piece(playerColor, PieceType.PAWN, new PawnMovement());
+                piece = new Piece(playerColor, PieceType.PAWN);
 
                 board[playerColor == clientColor ? 6 : 1][x] = piece;
 

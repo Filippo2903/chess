@@ -2,7 +2,7 @@ package client.Movements;
 
 import java.awt.Point;
 
-public class KnightMovement implements Movement {
+public class LMovement implements Movement {
     @Override
     public boolean canMove(Point from, Point to) {
         Point[] moves = {
@@ -17,7 +17,7 @@ public class KnightMovement implements Movement {
         };
 
         for (Point move : moves) {
-            if (to.x == from.x + move.x && to.y == from.y + move.y) {
+            if (MovementUtils.checkMove(from, to, move)) {
                 return true;
             }
         }

@@ -3,10 +3,15 @@ package client.Movements;
 import client.Game;
 import client.Piece;
 
-import java.awt.*;
+import java.awt.Point;
 
-public class LinearMovement{
-    public static boolean isThereAnObstacle(Point from, Point to, Point direction) {
+public class MovementUtils {
+    public static boolean checkMove(Point from, Point to, Point move) {
+        return
+            to.x == from.x + move.x &&
+            to.y == from.y + move.y;
+    }
+    public static boolean isPathFree(Point from, Point to, Point direction) {
         Piece[][] board = Game.getBoard();
         Point ghostPiece = new Point(from.x, from.y);
 
@@ -15,10 +20,10 @@ public class LinearMovement{
             ghostPiece.y += direction.y;
 
             if (board[ghostPiece.y][ghostPiece.x] != null) {
-                return true;
+                return false;
             }
         }
 
-        return false;
+        return true;
     }
 }

@@ -17,14 +17,20 @@ public class Packet implements Serializable {
     public final Point to;
 
     // Is game over?
-    public final boolean endGame;
+    public final boolean continuePlaying;
 
-    /**
-     * @param from Starting position of the piece
-     * @param to Arrival position of the piece
-     */
+    public final SpecialMove specialMove;
+
     public Packet(Point from, Point to) {
-        this(from, to, true);
+        this(from, to, SpecialMove.NONE, true);
+    }
+
+    public Packet(Point from, Point to, SpecialMove specialMove) {
+        this(from, to, specialMove, true);
+    }
+
+    public Packet(Point from, Point to, boolean continuePlaying) {
+        this(from, to, SpecialMove.NONE, continuePlaying);
     }
 
     /**
@@ -32,9 +38,11 @@ public class Packet implements Serializable {
      * @param to Arrival position of the piece
      * @param endGame Is game over?
      */
-    public Packet(Point from, Point to, boolean endGame) {
+    public Packet(Point from, Point to, SpecialMove specialMove, boolean continuePlaying) {
         this.from = from;
         this.to = to;
+
+        this.specialMove = specialMove;
 
         this.endGame = endGame;
     }

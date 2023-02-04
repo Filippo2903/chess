@@ -39,17 +39,9 @@ public class DiagonalMovement implements Movement {
         }
 
         if (linearMovement) {
-            if (LinearMovement.isThereAnObstacle(from, to, direction)) {
-                return false;
-            }
-
-            return true;
+            return MovementUtils.isPathFree(from, to, direction);
         }
 
-        if (from.x + direction.x != to.x || from.y + direction.y != to.y) {
-            return false;
-        }
-
-        return true;
+        return MovementUtils.checkMove(from, to, direction);
     }
 }

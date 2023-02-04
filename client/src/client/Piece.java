@@ -3,8 +3,7 @@ package client;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
-
-import client.Movements.Movement;
+import gameUtils.SpecialMove;
 
 import javax.swing.*;
 
@@ -12,21 +11,17 @@ import java.awt.*;
 import java.util.Objects;
 
 public class Piece extends JLabel {
-    private final int cellSize = Game.CELL_SIZE;
-
     public Point currentPosition = new Point(-1, -1);
     private final PlayerColor pieceColor;
     private final PieceType type;
-    private final Movement movement;
+    private boolean hasMoved = false;
 
-    public Piece(PlayerColor playerColor, PieceType type, Movement movement) {
+    public Piece(PlayerColor playerColor, PieceType type) {
         super();
 
         this.pieceColor = playerColor;
 
         this.type = type;
-
-        this.movement = movement;
 
         this.setHorizontalAlignment(JLabel.LEFT);
         this.setVerticalAlignment(JLabel.TOP);
@@ -44,24 +39,62 @@ public class Piece extends JLabel {
             return;
         }
 
-        if (movement.canMove(currentPosition, to)) {
-            Piece[][] board = Game.getBoard();
+        for (Movement movement : type.movements) {
+            if (movement.canMove(currentPosition, to)) {
+                Piece[][] board = Game.getBoard();
 
-            if (board[to.y][to.x] != null) {
-                if (board[to.y][to.x].getColor() == pieceColor) {
-                    return;
+                if (movement.getClass() == EnPassant.class) {
+                    board[to.y + 1][to.x].kill();
+
+                    Client.sendMove(new Packet(currentPosition, to, SpecialMove.EN_PASSANT));
                 }
-                board[to.y][to.x].kill();
+
+                else if (movement.getClass() == KingsideCastle.class) {
+                    final Point ROOK_START_POSITION = new Point(7, 7);
+                    final Point ROOK_ARRIVAL_POSITION = new Point(5, 7);
+
+                    Game.animatedMove(
+                            ROOK_START_POSITION,
+                            ROOK_ARRIVAL_POSITION,
+                            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x]
+                    );
+
+                    board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
+
+                    Client.sendMove(new Packet(currentPosition, to, SpecialMove.KINGSIDE_CASTLE));
+                }
+
+                else if (movement.getClass() == QueensideCastle.class) {
+                    final Point ROOK_START_POSITION = new Point(0, 7);
+                    final Point ROOK_ARRIVAL_POSITION = new Point(3, 7);
+
+                    board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].setPosition(ROOK_ARRIVAL_POSITION);
+
+                    Client.sendMove(new Packet(currentPosition, to, SpecialMove.QUEENSIDE_CASTLE));
+                }
+
+                else {
+                    if (board[to.y][to.x] != null) {
+                        if (board[to.y][to.x].getColor() == pieceColor) {
+                            return;
+                        }
+                        board[to.y][to.x].kill();
+                    }
+
+                    Client.sendMove(new Packet(currentPosition, to));
+                }
+
+                this.setPosition(to);
+
+                Thread recieveThread = new Thread(Client::receiveMove);
+                recieveThread.start();
+
+                Game.changePlayerTurn();
+
+                hasMoved = true;
+
+                break;
             }
-
-            Client.sendMove(new Packet(currentPosition, to));
-
-            this.setPosition(to);
-
-            Thread recieveThread = new Thread(Client::receiveMove);
-            recieveThread.start();
-
-            Game.changePlayerTurn();
         }
     }
 
@@ -70,7 +103,7 @@ public class Piece extends JLabel {
             Game.editBoardCell(currentPosition, null);
         }
 
-        this.setLocation(newPosition.x * cellSize, newPosition.y * cellSize);
+        this.setLocation(newPosition.x * Game.CELL_SIZE, newPosition.y * Game.CELL_SIZE);
 
         Game.editBoardCell(newPosition, this);
 
@@ -88,15 +121,18 @@ public class Piece extends JLabel {
     public PlayerColor getColor() {
         return pieceColor;
     }
-
-	public Image getImage() {
-		String path = "assets/" + pieceColor + type + ".png";
-
-        return new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
-	}
+    public PieceType getType() {
+        return type;
+    }
+    public boolean hasMoved() {
+        return hasMoved;
+    }
 
 	public void setImage() {
-        Image icon = getImage();
-		this.setIcon(new ImageIcon(icon.getScaledInstance(cellSize, cellSize, Image.SCALE_SMOOTH)));
+        String path = "assets/" + pieceColor + type + ".png";
+
+        Image icon = new ImageIcon(Objects.requireNonNull(getClass().getResource(path))).getImage();
+
+		this.setIcon(new ImageIcon(icon.getScaledInstance(Game.CELL_SIZE, Game.CELL_SIZE, Image.SCALE_SMOOTH)));
 	}
 }
