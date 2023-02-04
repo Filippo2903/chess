@@ -45,9 +45,15 @@ public enum PieceType {
 
     public final String algebraicNotation;
     public final int value;
+    public final ArrayList<Movement> movements;
 
-    PieceType(String algebraicNotation, int value) {
+    PieceType(String algebraicNotation, int value, Movement movement) {
+        this(algebraicNotation, value, new ArrayList<>(List.of(movement)));
+    }
+
+    PieceType(String algebraicNotation, int value, ArrayList<Movement> movements) {
         this.algebraicNotation = algebraicNotation;
         this.value = value;
+        this.movements = movements;
     }
 }

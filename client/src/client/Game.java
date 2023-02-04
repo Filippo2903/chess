@@ -18,8 +18,10 @@ public class Game {
     private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
 
-    private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 510; // 570
+    private static Point[] enemyMove = new Point[2];
+
     public static final int DIM_CHESSBOARD = 8;
+    private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 510; // 570
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
 
@@ -45,7 +47,7 @@ public class Game {
 
 
     /**
-     * Edit a cell of the board data
+     * Edit a cell of the data board
      * @param cell Cell to edit
      * @param value Value to assign to the cell
      */
@@ -98,6 +100,8 @@ public class Game {
     public void enemyMove(Packet packet) {
         Piece enemyPiece = board[packet.from.y][packet.from.x];
 
+        enemyMove = new Point[] {packet.from, packet.to};
+
         // Delete previous position
         editBoardCell(packet.from, null);
 
@@ -135,6 +139,10 @@ public class Game {
 
         // Change the player turn
         changePlayerTurn();
+    }
+
+    public static Point[] getEnemyMove() {
+        return enemyMove;
     }
 
     /**
@@ -262,8 +270,7 @@ public class Game {
         PieceType pieceType;
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
-                pieceMovement = startRow[x];
-                pieceType = startRowType[x];
+                pieceType = startRow[x];
 
                 // Add pieces
                 piece = new Piece(playerColor, pieceType);

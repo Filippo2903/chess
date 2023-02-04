@@ -36,7 +36,8 @@ public class Packet implements Serializable {
     /**
      * @param from Starting position of the piece
      * @param to Arrival position of the piece
-     * @param endGame Is game over?
+     * @param specialMove Special move
+     * @param continuePlaying Is game over?
      */
     public Packet(Point from, Point to, SpecialMove specialMove, boolean continuePlaying) {
         this.from = from;
@@ -44,7 +45,7 @@ public class Packet implements Serializable {
 
         this.specialMove = specialMove;
 
-        this.endGame = endGame;
+        this.continuePlaying = continuePlaying;
     }
 
     /**

@@ -1,5 +1,9 @@
 package client;
 
+import client.Movements.EnPassant;
+import client.Movements.KingsideCastle;
+import client.Movements.Movement;
+import client.Movements.QueensideCastle;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;

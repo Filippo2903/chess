@@ -30,7 +30,7 @@ public class Server {
             System.exit(-1);
         }
 
-        if (!packet.endGame) {
+        if (!packet.continuePlaying) {
             return false;
         }
 
