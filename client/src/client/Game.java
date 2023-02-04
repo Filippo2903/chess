@@ -167,7 +167,7 @@ public class Game {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 if (JOptionPane.showConfirmDialog(window,
-                        "Are you sure?", "Quit",
+                        "Sei sicuro?", "Abbandona",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
 
@@ -212,7 +212,6 @@ public class Game {
      * Draw the chessboard in the UI
      */
     private void initChessboard() {
-        // TODO config
         final Color BLACK_CELL = new Color(0xFFEFD5),
                     WHITE_CELL = new Color(0x654321);
 
@@ -243,7 +242,6 @@ public class Game {
         // Add the panel to the frame
         window.add(chessboardPanel);
     }
-
 
     /**
      * Draw the pieces to the UI and initialize the board

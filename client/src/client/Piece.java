@@ -109,12 +109,6 @@ public class Piece extends JLabel {
                     final Point ROOK_START_POSITION = new Point(7, 7);
                     final Point ROOK_ARRIVAL_POSITION = new Point(5, 7);
 
-                    Game.animatedMove(
-                            ROOK_START_POSITION,
-                            ROOK_ARRIVAL_POSITION,
-                            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x]
-                    );
-
                     Thread animatedMove = new Thread(()-> {
                         board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
                     });
