@@ -35,8 +35,8 @@ public class Server {
             return false;
         }
 
-        if (packet.specialMove == SpecialMove.PROMOTE) {
-            // TODO richiesta a client del tipo in cui promuovere
+        if (packet.type != null && packet.to.y == 7) {
+            // TODO sostituzione pezzo
         }
 
         try {

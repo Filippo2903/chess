@@ -2,7 +2,7 @@ package client.Movements;
 
 import client.Game;
 import client.Piece;
-import client.PieceType;
+import gameUtils.PieceType;
 
 import java.awt.Point;
 

@@ -5,6 +5,7 @@ import client.Movements.KingsideCastle;
 import client.Movements.Movement;
 import client.Movements.QueensideCastle;
 import gameUtils.Packet;
+import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import gameUtils.SpecialMove;
 import modal.ErrorPopup;
@@ -18,15 +19,15 @@ import java.net.URL;
 public class Piece extends JLabel {
     public Point currentPosition = new Point(-1, -1);
     private final PlayerColor pieceColor;
-    private final PieceType type;
+    private final PieceMoves pieceMoves;
     private boolean hasMoved = false;
 
-    public Piece(PlayerColor playerColor, PieceType type) {
+    public Piece(PlayerColor playerColor, PieceMoves pieceMoves) {
         super();
 
         this.pieceColor = playerColor;
 
-        this.type = type;
+        this.pieceMoves = pieceMoves;
 
         this.setHorizontalAlignment(JLabel.LEFT);
         this.setVerticalAlignment(JLabel.TOP);
@@ -90,7 +91,7 @@ public class Piece extends JLabel {
             return;
         }
 
-        for (Movement movement : type.movements) {
+        for (Movement movement : pieceMoves.movements) {
             if (movement.canMove(currentPosition, to)) {
                 Game.setFromCellVisible();
                 Game.setToCellVisible();
@@ -139,17 +140,22 @@ public class Piece extends JLabel {
                         board[to.y][to.x].kill();
                     }
 
-                    Client.sendMove(new Packet(currentPosition, to));
+                    if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
+                        PieceType promoteType = Game.promote(this, to);
+                        Client.sendMove(new Packet(currentPosition, to, promoteType));
+                    } else {
+                        Client.sendMove(new Packet(currentPosition, to));
+                    }
                 }
 
                 this.setPosition(to);
 
-                Thread recieveThread = new Thread(Client::receiveMove);
-                recieveThread.start();
+                hasMoved = true;
 
                 Game.changePlayerTurn();
 
-                hasMoved = true;
+                Thread recieveThread = new Thread(Client::receiveMove);
+                recieveThread.start();
 
                 return;
             }
@@ -173,23 +179,26 @@ public class Piece extends JLabel {
     public void kill() {
         Game.editBoardCell(currentPosition, null);
 
-        JPanel chessboardPanel = (JPanel) this.getParent();
-        chessboardPanel.remove(this);
-        chessboardPanel.repaint();
+        Game.chessboardPanel.remove(this);
+        Game.chessboardPanel.repaint();
     }
 
     public PlayerColor getColor() {
         return pieceColor;
     }
     public PieceType getType() {
-        return type;
+        return pieceMoves.type;
     }
     public boolean hasMoved() {
         return hasMoved;
     }
 
     public void setImage() {
-        String iconName = pieceColor.toString().toLowerCase() + type.toString().substring(0, 1).toUpperCase() + type.toString().substring(1).toLowerCase() + ".png";
+        String iconName =
+                pieceColor.toString().toLowerCase() +
+                pieceMoves.type.toString().substring(0, 1).toUpperCase() +
+                pieceMoves.type.toString().substring(1).toLowerCase() +
+                ".png";
 
         URL path = ClassLoader.getSystemResource(iconName);
         if (path == null) {

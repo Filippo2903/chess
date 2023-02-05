@@ -1,12 +1,7 @@
 package gameUtils;
 
 import java.awt.*;
-import java.io.Serializable;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.*;
 import java.util.Base64;
 
 public class Packet implements Serializable {
@@ -21,16 +16,22 @@ public class Packet implements Serializable {
 
     public final SpecialMove specialMove;
 
+    public final PieceType type;
+
+    public Packet(Point from, Point to, PieceType type) {
+        this(from, to, null, type, true);
+    }
+
     public Packet(Point from, Point to) {
-        this(from, to, SpecialMove.NONE, true);
+        this(from, to, SpecialMove.NONE, null, true);
     }
 
     public Packet(Point from, Point to, SpecialMove specialMove) {
-        this(from, to, specialMove, true);
+        this(from, to, specialMove, null, true);
     }
 
     public Packet(Point from, Point to, boolean continuePlaying) {
-        this(from, to, SpecialMove.NONE, continuePlaying);
+        this(from, to, SpecialMove.NONE, null, continuePlaying);
     }
 
     /**
@@ -39,11 +40,13 @@ public class Packet implements Serializable {
      * @param specialMove Special move
      * @param continuePlaying Is game over?
      */
-    public Packet(Point from, Point to, SpecialMove specialMove, boolean continuePlaying) {
+    public Packet(Point from, Point to, SpecialMove specialMove, PieceType type, boolean continuePlaying) {
         this.from = from;
         this.to = to;
 
         this.specialMove = specialMove;
+
+        this.type = type;
 
         this.continuePlaying = continuePlaying;
     }

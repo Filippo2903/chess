@@ -1,12 +1,13 @@
 package client;
 
-import client.Movements.*;
+import gameUtils.PieceType;
 
+import client.Movements.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public enum PieceType {
-    PAWN("P", 1,
+public enum PieceMoves {
+    PAWN(PieceType.PAWN,
             new ArrayList<>(List.of(
                     new SingleStepMovement(),
                     new DoubleStepMovement(),
@@ -15,26 +16,26 @@ public enum PieceType {
             )
     ),
 
-    KNIGHT("N", 3,
+    KNIGHT(PieceType.KNIGHT,
             new LMovement()
     ),
 
-    BISHOP("B", 3,
+    BISHOP(PieceType.BISHOP,
             new DiagonalMovement(true)
     ),
 
-    ROOK("R", 5,
+    ROOK(PieceType.ROOK,
             new StraightMovement(true)
     ),
 
-    QUEEN("Q", 9,
+    QUEEN(PieceType.QUEEN,
             new ArrayList<>(List.of(
                     new StraightMovement(true),
                     new DiagonalMovement(true))
             )
     ),
 
-    KING("K", 10,
+    KING(PieceType.KING,
             new ArrayList<>(List.of(
                     new StraightMovement(false),
                     new DiagonalMovement(false),
@@ -43,17 +44,16 @@ public enum PieceType {
             )
     );
 
-    public final String algebraicNotation;
-    public final int value;
+    public final PieceType type;
     public final ArrayList<Movement> movements;
 
-    PieceType(String algebraicNotation, int value, Movement movement) {
-        this(algebraicNotation, value, new ArrayList<>(List.of(movement)));
+    PieceMoves(PieceType type, Movement movement) {
+        this(type, new ArrayList<>(List.of(movement)));
     }
 
-    PieceType(String algebraicNotation, int value, ArrayList<Movement> movements) {
-        this.algebraicNotation = algebraicNotation;
-        this.value = value;
+    PieceMoves(PieceType type, ArrayList<Movement> movements) {
+        this.type = type;
+
         this.movements = movements;
     }
 }

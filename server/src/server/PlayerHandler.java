@@ -59,6 +59,20 @@ public class PlayerHandler {
         return serializedMove;
     }
 
+    public String listenTypePromotion() {
+        String serializedMove = null;
+
+        try {
+            // Wait from sender client
+            serializedMove = input.nextLine();
+        } catch (NoSuchElementException e) {
+            System.out.println("Player " + playerColor + " disconnected");
+            Server.matchmaking();
+        }
+
+        return serializedMove;
+    }
+
     public void send(String serializedMove) {
         output.println(serializedMove);
     }

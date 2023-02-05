@@ -2,6 +2,7 @@ package client;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
+import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import gameUtils.SpecialMove;
 import themes.CustomTheme;
@@ -25,9 +26,9 @@ public class Game {
     // The board where all the pieces will be stored
     private static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
     private final JFrame window = new JFrame();
-    private JPanel chessboardPanel;
+    public static JPanel chessboardPanel;
     private static final JLabel fromCell = new JLabel(),
-                         toCell = new JLabel();
+                                toCell = new JLabel();
 
     public static PlayerColor getPlayerColor() {
         return clientColor;
@@ -63,6 +64,30 @@ public class Game {
     }
     public static void setPositionToCell(Point cell) {
         toCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
+    }
+
+    public static PieceType promote(Piece piece, Point promotingCell) {
+        piece.kill();
+
+        PieceMoves promoteMoves = PieceMoves.QUEEN;
+
+        Piece promotedPiece = new Piece(clientColor, promoteMoves);
+
+        board[promotingCell.y][promotingCell.x] = promotedPiece;
+
+        promotedPiece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
+
+        promotedPiece.setImage();
+
+        promotedPiece.setPosition(promotingCell);
+
+        chessboardPanel.add(promotedPiece);
+
+        chessboardPanel.setComponentZOrder(promotedPiece, 0);
+
+        chessboardPanel.repaint();
+
+        return promoteMoves.type;
     }
 
     /**
@@ -249,15 +274,15 @@ public class Game {
     private void initPieces() {
 
         /* Paint all the pieces in the board */
-        final PieceType[] startRow = {
-                PieceType.ROOK,
-                PieceType.KNIGHT,
-                PieceType.BISHOP,
-                PieceType.QUEEN,
-                PieceType.KING,
-                PieceType.BISHOP,
-                PieceType.KNIGHT,
-                PieceType.ROOK
+        final PieceMoves[] startRow = {
+                PieceMoves.ROOK,
+                PieceMoves.KNIGHT,
+                PieceMoves.BISHOP,
+                PieceMoves.QUEEN,
+                PieceMoves.KING,
+                PieceMoves.BISHOP,
+                PieceMoves.KNIGHT,
+                PieceMoves.ROOK
         };
 
         // Fill the board with null
@@ -265,13 +290,13 @@ public class Game {
 
         // Create, paint and store every piece in the chessboard
         Piece piece;
-        PieceType pieceType;
+        PieceMoves pieceMoves;
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
-                pieceType = startRow[x];
+                pieceMoves = startRow[x];
 
                 // Add pieces
-                piece = new Piece(playerColor, pieceType);
+                piece = new Piece(playerColor, pieceMoves);
 
                 board[playerColor == clientColor ? 7 : 0][x] = piece;
 
@@ -284,7 +309,7 @@ public class Game {
                 chessboardPanel.add(piece);
 
                 // Add pawns
-                piece = new Piece(playerColor, PieceType.PAWN);
+                piece = new Piece(playerColor, PieceMoves.PAWN);
 
                 board[playerColor == clientColor ? 6 : 1][x] = piece;
 
