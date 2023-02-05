@@ -42,15 +42,11 @@ public class Piece extends JLabel {
 
 
     /**
-     * Move a piece smoothly
-     *
+     * Move a piece to a point smoothly
      * @param to Arrival cell
      */
     public void animatedMove(Point to) {
         int fps = 60;
-
-        if (fps > Game.CELL_SIZE)
-            throw new IllegalArgumentException("FPS cannot be greater than cell size");
 
         double duration = 1;
         int frame = (int) (fps * duration);
@@ -80,67 +76,88 @@ public class Piece extends JLabel {
         this.setPosition(to);
     }
 
+    /**
+     * Move a piece to a point
+     * @param to Arrival cell
+     */
     public void move(Point to) {
+        // If it's not the client turn or the client tries to move a piece that isn't his, don't move
         if (CheckPlayerMove.isNotPlayerTurn() || CheckPlayerMove.isNotPlayerPiece(this.getColor())) {
             this.setPosition(currentPosition);
             return;
         }
 
+        // If the piece is moved where he already is, don't move
         if (to.x == currentPosition.x && to.y == currentPosition.y) {
             this.setPosition(currentPosition);
             return;
         }
 
+        // Check if the piece can move to the desired cell
         for (Movement movement : pieceMoves.movements) {
             if (movement.canMove(currentPosition, to)) {
+
+                // Add the from and to cells highlights
                 Game.setFromCellVisible();
                 Game.setToCellVisible();
                 Game.setPositionFromCell(currentPosition);
                 Game.setPositionToCell(to);
 
+                // Fetch the board from the game
                 Piece[][] board = Game.getBoard();
 
+                // Check if the move is an En Passant
                 if (movement.getClass() == EnPassant.class) {
+                    // Kill the passed pawn
                     board[to.y + 1][to.x].kill();
 
+                    // Send the move to the server specifying it was an En Passant
                     Client.sendMove(new Packet(currentPosition, to, SpecialMove.EN_PASSANT));
                 }
 
+                // Check if the move is a Kingside Castle
                 else if (movement.getClass() == KingsideCastle.class) {
                     final Point ROOK_START_POSITION = new Point(7, 7);
                     final Point ROOK_ARRIVAL_POSITION = new Point(5, 7);
 
-                    Thread animatedMove = new Thread(()-> {
-                        board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
-                    });
+                    // Move the rook
+                    board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
 
-                    animatedMove.start();
-
+                    // Send the move to the server specifying it was a Kingside Castle
                     Client.sendMove(new Packet(currentPosition, to, SpecialMove.KINGSIDE_CASTLE));
                 }
 
+                // Check if the move is a Queenside Castle
                 else if (movement.getClass() == QueensideCastle.class) {
                     final Point ROOK_START_POSITION = new Point(0, 7);
                     final Point ROOK_ARRIVAL_POSITION = new Point(3, 7);
 
-                    Thread animatedMove = new Thread(()-> {
-                        board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
-                    });
+                    // Move the rook
+                    board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
 
-                    animatedMove.start();
-
+                    // Send the move to the server specifying it was a Queenside castle
                     Client.sendMove(new Packet(currentPosition, to, SpecialMove.QUEENSIDE_CASTLE));
                 }
 
+                // The move is not a special move
                 else {
+
+                    // Check if the piece is moving to an occupied cell
                     if (board[to.y][to.x] != null) {
+
+                        // If the cell is occupied by an allied piece just do nothing
                         if (board[to.y][to.x].getColor() == pieceColor) {
                             return;
                         }
+
+                        // Eat the piece
                         board[to.y][to.x].kill();
                     }
 
+                    // Check if the piece is a pawn, and it's going to promote
                     if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
+
+                        // Send the server the move specifying a change in the piece's type
                         PieceType promoteType = Game.promote(this, to);
                         Client.sendMove(new Packet(currentPosition, to, promoteType));
                     } else {
@@ -148,12 +165,14 @@ public class Piece extends JLabel {
                     }
                 }
 
+                // Change the position in the client
                 this.setPosition(to);
 
                 hasMoved = true;
 
                 Game.changePlayerTurn();
 
+                // Start listening for the enemy move
                 Thread recieveThread = new Thread(Client::receiveMove);
                 recieveThread.start();
 
@@ -161,9 +180,11 @@ public class Piece extends JLabel {
             }
         }
 
+        // If the piece can't move to the desired position, place him in his cell
         this.setPosition(currentPosition);
     }
 
+    // TODO ?
     public void setPosition(Point newPosition) {
         if (currentPosition.x != -1 && currentPosition.y != -1) {
             Game.editBoardCell(currentPosition, null);
@@ -176,6 +197,10 @@ public class Piece extends JLabel {
         currentPosition = newPosition;
     }
 
+
+    /**
+     * Kill the piece
+     */
     public void kill() {
         Game.editBoardCell(currentPosition, null);
 

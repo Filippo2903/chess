@@ -2,7 +2,6 @@ package server;
 
 import gameUtils.Packet;
 import gameUtils.PlayerColor;
-import gameUtils.SpecialMove;
 import modal.ErrorPopup;
 import modal.Theme;
 
@@ -35,7 +34,7 @@ public class Server {
             return false;
         }
 
-        if (packet.type != null && packet.to.y == 7) {
+        if (packet.newType != null && packet.to.y == 7) {
             // TODO sostituzione pezzo
         }
 

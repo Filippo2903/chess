@@ -13,40 +13,40 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Game {
-    private static PlayerColor clientColor = PlayerColor.WHITE;
-    private static PlayerColor playerTurn;
-
-    private static Point[] enemyMove = new Point[2];
-
     public static final int DIM_CHESSBOARD = 8;
     private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 510; // 570
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
-
     // The board where all the pieces will be stored
     private static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
-    private final JFrame window = new JFrame();
-    public static JPanel chessboardPanel;
     private static final JLabel fromCell = new JLabel(),
-                                toCell = new JLabel();
+            toCell = new JLabel();
+    public static JPanel chessboardPanel;
+    private static PlayerColor clientColor = PlayerColor.WHITE;
+    private static PlayerColor playerTurn;
+    private static Point[] enemyMove = new Point[2];
+    private final JFrame window = new JFrame();
 
     public static PlayerColor getPlayerColor() {
         return clientColor;
     }
+
     public static PlayerColor getPlayerTurn() {
         return playerTurn;
     }
+
     public static Piece[][] getBoard() {
         return board;
     }
+
     public static void changePlayerTurn() {
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
 
-
     /**
      * Edit a cell of the data board
-     * @param cell Cell to edit
+     *
+     * @param cell  Cell to edit
      * @param value Value to assign to the cell
      */
     public static void editBoardCell(Point cell, Piece value) {
@@ -56,38 +56,46 @@ public class Game {
     public static void setFromCellVisible() {
         fromCell.setVisible(true);
     }
+
     public static void setToCellVisible() {
         toCell.setVisible(true);
     }
+
     public static void setPositionFromCell(Point cell) {
         fromCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
+
     public static void setPositionToCell(Point cell) {
         toCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
 
     public static PieceType promote(Piece piece, Point promotingCell) {
+        // Kill the old piece
         piece.kill();
 
-        PieceMoves promoteMoves = PieceMoves.QUEEN;
+        // Create a new piece with the same color and the new type
+        PieceMoves promoteType = PieceMoves.QUEEN;
 
-        Piece promotedPiece = new Piece(clientColor, promoteMoves);
+        Piece promotedPiece = new Piece(piece.getColor(), promoteType);
 
+        // Place the newly created piece in the board
         board[promotingCell.y][promotingCell.x] = promotedPiece;
 
+        // Set position, size and icon
         promotedPiece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
-
         promotedPiece.setImage();
-
         promotedPiece.setPosition(promotingCell);
 
+        // Add the piece to the UI
         chessboardPanel.add(promotedPiece);
-
         chessboardPanel.setComponentZOrder(promotedPiece, 0);
-
         chessboardPanel.repaint();
 
-        return promoteMoves.type;
+        return promoteType.type;
+    }
+
+    public static Point[] getEnemyMove() {
+        return enemyMove;
     }
 
     /**
@@ -97,53 +105,53 @@ public class Game {
     public void enemyMove(Packet packet) {
         Piece enemyPiece = board[packet.from.y][packet.from.x];
 
-        enemyMove = new Point[] {packet.from, packet.to};
+        enemyMove = new Point[]{packet.from, packet.to};
 
         // Delete previous position
         editBoardCell(packet.from, null);
 
-        if (packet.specialMove == SpecialMove.NONE) {
+        // Check if the move is special
+        if (packet.specialMove == SpecialMove.NONE || packet.specialMove == null) {
+
+            // If the cell where the piece is moved is occupied, kill the piece
             if (board[packet.to.y][packet.to.x] != null) {
                 board[packet.to.y][packet.to.x].kill();
             }
         }
 
+        // Check if the move is an En Passant
         else if (packet.specialMove == SpecialMove.EN_PASSANT) {
             Piece eatenPiece = board[packet.to.y - 1][packet.to.x];
             eatenPiece.kill();
         }
 
+        // Check if the move is a Kingside Castle
         else if (packet.specialMove == SpecialMove.KINGSIDE_CASTLE) {
             final Point ROOK_START_POSITION = new Point(7, 0);
             final Point ROOK_ARRIVAL_POSITION = new Point(5, 0);
 
-            Thread animatedMove = new Thread(()-> {
-                board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
-            });
-
-            animatedMove.start();
+            // Move the rook
+            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
         }
 
+        // Check if the move is a Queenside Castle
         else if (packet.specialMove == SpecialMove.QUEENSIDE_CASTLE) {
             final Point ROOK_START_POSITION = new Point(0, 0);
             final Point ROOK_ARRIVAL_POSITION = new Point(3, 0);
 
-            Thread animatedMove = new Thread(()-> {
-                board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
-            });
-
-            animatedMove.start();
+            // Move the rook
+            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
         }
 
-        // Place the piece in front of the other
-        chessboardPanel.setComponentZOrder(enemyPiece, 0);
+        // Move the piece to the target cell
+        enemyPiece.animatedMove(packet.to);
 
-        Thread animatedMove = new Thread(()-> {
-            enemyPiece.animatedMove(packet.to);
-        });
+        // Check if the piece type has to change
+        if (packet.newType != null) {
+            promote(enemyPiece, packet.to);
+        }
 
-        animatedMove.start();
-
+        // Update the from and to cell highlights
         fromCell.setLocation(packet.from.x * CELL_SIZE, packet.from.y * CELL_SIZE);
         toCell.setLocation(packet.to.x * CELL_SIZE, packet.to.y * CELL_SIZE);
         setFromCellVisible();
@@ -151,10 +159,6 @@ public class Game {
 
         // Change the player turn
         changePlayerTurn();
-    }
-
-    public static Point[] getEnemyMove() {
-        return enemyMove;
     }
 
     /**
@@ -175,7 +179,8 @@ public class Game {
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
 
-        playButton.addActionListener(e -> {});
+        playButton.addActionListener(e -> {
+        });
 
         window.add(playButton);
     }
@@ -194,7 +199,7 @@ public class Game {
                 if (JOptionPane.showConfirmDialog(window,
                         "Sei sicuro?", "Abbandona",
                         JOptionPane.YES_NO_OPTION,
-                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION){
+                        JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 
                     System.exit(0);
                 }
@@ -238,7 +243,7 @@ public class Game {
      */
     private void initChessboard() {
         final Color BLACK_CELL = new Color(0xFFEFD5),
-                    WHITE_CELL = new Color(0x654321);
+                WHITE_CELL = new Color(0x654321);
 
         // Create and paint the background of the panel that will contain the chessboard
         chessboardPanel = new JPanel() {

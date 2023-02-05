@@ -16,10 +16,10 @@ public class Packet implements Serializable {
 
     public final SpecialMove specialMove;
 
-    public final PieceType type;
+    public final PieceType newType;
 
-    public Packet(Point from, Point to, PieceType type) {
-        this(from, to, null, type, true);
+    public Packet(Point from, Point to, PieceType newType) {
+        this(from, to, null, newType, true);
     }
 
     public Packet(Point from, Point to) {
@@ -40,13 +40,13 @@ public class Packet implements Serializable {
      * @param specialMove Special move
      * @param continuePlaying Is game over?
      */
-    public Packet(Point from, Point to, SpecialMove specialMove, PieceType type, boolean continuePlaying) {
+    public Packet(Point from, Point to, SpecialMove specialMove, PieceType newType, boolean continuePlaying) {
         this.from = from;
         this.to = to;
 
         this.specialMove = specialMove;
 
-        this.type = type;
+        this.newType = newType;
 
         this.continuePlaying = continuePlaying;
     }

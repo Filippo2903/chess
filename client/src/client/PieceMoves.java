@@ -1,47 +1,42 @@
 package client;
 
+import client.Movements.*;
 import gameUtils.PieceType;
 
-import client.Movements.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public enum PieceMoves {
     PAWN(PieceType.PAWN,
-            new ArrayList<>(List.of(
-                    new SingleStepMovement(),
-                    new DoubleStepMovement(),
-                    new PawnTakeMovement(),
-                    new EnPassant())
-            )
+        new ArrayList<>(List.of(
+            new SingleStepMovement(),
+            new DoubleStepMovement(),
+            new PawnTakeMovement(),
+            new EnPassant()
+        ))
     ),
-
     KNIGHT(PieceType.KNIGHT,
-            new LMovement()
+        new LMovement()
     ),
-
     BISHOP(PieceType.BISHOP,
-            new DiagonalMovement(true)
+        new DiagonalMovement(true)
     ),
-
     ROOK(PieceType.ROOK,
-            new StraightMovement(true)
+        new StraightMovement(true)
     ),
-
     QUEEN(PieceType.QUEEN,
-            new ArrayList<>(List.of(
-                    new StraightMovement(true),
-                    new DiagonalMovement(true))
-            )
+        new ArrayList<>(List.of(
+            new StraightMovement(true),
+            new DiagonalMovement(true)
+        ))
     ),
-
     KING(PieceType.KING,
-            new ArrayList<>(List.of(
-                    new StraightMovement(false),
-                    new DiagonalMovement(false),
-                    new KingsideCastle(),
-                    new QueensideCastle())
-            )
+        new ArrayList<>(List.of(
+            new StraightMovement(false),
+            new DiagonalMovement(false),
+            new KingsideCastle(),
+            new QueensideCastle()
+        ))
     );
 
     public final PieceType type;
@@ -53,7 +48,6 @@ public enum PieceMoves {
 
     PieceMoves(PieceType type, ArrayList<Movement> movements) {
         this.type = type;
-
         this.movements = movements;
     }
 }
