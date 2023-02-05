@@ -1,6 +1,7 @@
 package client.audio;
 
 import javax.sound.sampled.*;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -16,9 +17,9 @@ public class AudioPlayer {
         AudioInputStream ais;
         try {
             ais = AudioSystem.getAudioInputStream(
-                    Objects.requireNonNull(AudioPlayer.class.getResourceAsStream("/audio/" + audioType.filename))
+                    new BufferedInputStream(Objects.requireNonNull(AudioPlayer.class.getResourceAsStream("/audio/" + audioType.filename)))
             );
-        } catch (UnsupportedAudioFileException | IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         try {
@@ -28,11 +29,6 @@ public class AudioPlayer {
         }
 
         clip.start();
-//        clip.loop(Clip.LOOP_CONTINUOUSLY);
-//        SwingUtilities.invokeLater(() -> {
-//            // A GUI element to prevent the Clip's daemon Thread
-//            // from terminating at the end of the main()
-//            JOptionPane.showMessageDialog(null, "Close to exit!");
-//        });
+
     }
 }
