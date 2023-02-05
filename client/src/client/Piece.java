@@ -182,6 +182,8 @@ public class Piece extends JLabel {
                 Thread recieveThread = new Thread(Client::receiveMove);
                 recieveThread.start();
 
+                Game.chessboardPanel.repaint();
+
                 return;
             }
         }
@@ -191,7 +193,7 @@ public class Piece extends JLabel {
     }
 
     public void setPosition(Point newPosition) {
-        // If the piece is in the board
+        // If the piece is inside the board
         if (currentPosition.x != -1 && currentPosition.y != -1) {
             Game.editBoardCell(currentPosition, null);
         }
@@ -210,7 +212,6 @@ public class Piece extends JLabel {
      * Kill the piece
      */
     public void kill() {
-//        System.out.println(this.getType());
         Game.editBoardCell(currentPosition, null);
 
         Game.chessboardPanel.remove(this);
