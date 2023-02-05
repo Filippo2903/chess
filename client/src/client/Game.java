@@ -1,8 +1,9 @@
 package client;
 
+import client.audio.AudioPlayer;
+import client.audio.AudioType;
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
-import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import gameUtils.SpecialMove;
 import themes.CustomTheme;
@@ -26,6 +27,16 @@ public class Game {
     private static PlayerColor playerTurn;
     private static Point[] enemyMove = new Point[2];
     private final JFrame window = new JFrame();
+
+    public static void printBoard() {
+        for (Piece[] line : board) {
+              for(Piece piece : line) {
+                      System.out.print(piece == null ? "   " : (piece.getColor().toString().charAt(0) + piece.getType().algebraicNotation) + " ");
+              }
+              System.out.println();
+        }
+        System.out.println();
+    }
 
     public static PlayerColor getPlayerColor() {
         return clientColor;
@@ -105,18 +116,24 @@ public class Game {
         if (packet.specialMove == null) {
             // If the cell where the piece is moved is occupied, kill the piece
             if (board[packet.to.y][packet.to.x] != null) {
+                AudioPlayer.play(AudioType.TAKE);
+
                 board[packet.to.y][packet.to.x].kill();
             }
         }
 
         // Check if the move is an En Passant
         else if (packet.specialMove == SpecialMove.EN_PASSANT) {
+            AudioPlayer.play(AudioType.TAKE);
+
             Piece eatenPiece = board[packet.to.y - 1][packet.to.x];
             eatenPiece.kill();
         }
 
         // Check if the move is a Kingside Castle
         else if (packet.specialMove == SpecialMove.KINGSIDE_CASTLE) {
+            AudioPlayer.play(AudioType.CASTLE);
+
             final Point ROOK_START_POSITION = new Point(7, 0);
             final Point ROOK_ARRIVAL_POSITION = new Point(5, 0);
 
@@ -126,6 +143,8 @@ public class Game {
 
         // Check if the move is a Queenside Castle
         else if (packet.specialMove == SpecialMove.QUEENSIDE_CASTLE) {
+            AudioPlayer.play(AudioType.CASTLE);
+
             final Point ROOK_START_POSITION = new Point(0, 0);
             final Point ROOK_ARRIVAL_POSITION = new Point(3, 0);
 
@@ -323,7 +342,6 @@ public class Game {
         // Repaint to apply changes
         chessboardPanel.repaint();
     }
-
 
     /**
      * Draws the chessboard inside the window

@@ -1,5 +1,7 @@
 package client;
 
+import client.audio.AudioPlayer;
+import client.audio.AudioType;
 import gameUtils.*;
 import modal.ErrorPopup;
 import modal.Theme;
@@ -96,6 +98,8 @@ public class Client {
         System.out.println("Client Address : " + address);
 
         System.out.println("Client has color " + color);
+
+        AudioPlayer.play(AudioType.GAME_START);
 
         // If the client has black, it has to listen first
         if (color == PlayerColor.BLACK) {

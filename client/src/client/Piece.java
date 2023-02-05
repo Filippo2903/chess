@@ -42,7 +42,6 @@ public class Piece extends JLabel {
         this.addMouseMotionListener(dragAndDrop);
     }
 
-
     /**
      * Move a piece to a point smoothly
      * @param to Arrival cell
@@ -109,6 +108,8 @@ public class Piece extends JLabel {
 
                 // Check if the move is an En Passant
                 if (movement.getClass() == EnPassant.class) {
+                    AudioPlayer.play(AudioType.TAKE);
+
                     // Kill the passed pawn
                     board[to.y + 1][to.x].kill();
 
@@ -117,6 +118,8 @@ public class Piece extends JLabel {
 
                 // Check if the move is a Kingside Castle
                 else if (movement.getClass() == KingsideCastle.class) {
+                    AudioPlayer.play(AudioType.CASTLE);
+
                     final Point ROOK_START_POSITION = new Point(7, 7);
                     final Point ROOK_ARRIVAL_POSITION = new Point(5, 7);
 
@@ -128,6 +131,8 @@ public class Piece extends JLabel {
 
                 // Check if the move is a Queenside Castle
                 else if (movement.getClass() == QueensideCastle.class) {
+                    AudioPlayer.play(AudioType.CASTLE);
+
                     final Point ROOK_START_POSITION = new Point(0, 7);
                     final Point ROOK_ARRIVAL_POSITION = new Point(3, 7);
 
@@ -186,6 +191,7 @@ public class Piece extends JLabel {
     }
 
     public void setPosition(Point newPosition) {
+        // If the piece is in the board
         if (currentPosition.x != -1 && currentPosition.y != -1) {
             Game.editBoardCell(currentPosition, null);
         }
@@ -199,7 +205,6 @@ public class Piece extends JLabel {
         // Set the new position at the piece
         currentPosition = newPosition;
     }
-
 
     /**
      * Kill the piece
