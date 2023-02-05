@@ -1,9 +1,11 @@
 package client;
 
-import client.Movements.EnPassant;
-import client.Movements.KingsideCastle;
-import client.Movements.Movement;
-import client.Movements.QueensideCastle;
+import client.audio.AudioPlayer;
+import client.audio.AudioType;
+import client.movements.EnPassant;
+import client.movements.KingsideCastle;
+import client.movements.Movement;
+import client.movements.QueensideCastle;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
@@ -96,10 +98,9 @@ public class Piece extends JLabel {
         // Check if the piece can move to the desired cell
         for (Movement movement : pieceMoves.movements) {
             if (movement.canMove(currentPosition, to)) {
+                SpecialMove moveStyle = null;
 
                 // Add the from and to cells highlights
-                Game.setFromCellVisible();
-                Game.setToCellVisible();
                 Game.setPositionFromCell(currentPosition);
                 Game.setPositionToCell(to);
 
@@ -111,8 +112,7 @@ public class Piece extends JLabel {
                     // Kill the passed pawn
                     board[to.y + 1][to.x].kill();
 
-                    // Send the move to the server specifying it was an En Passant
-                    Client.sendMove(new Packet(currentPosition, to, SpecialMove.EN_PASSANT));
+                    moveStyle = SpecialMove.EN_PASSANT;
                 }
 
                 // Check if the move is a Kingside Castle
@@ -123,8 +123,7 @@ public class Piece extends JLabel {
                     // Move the rook
                     board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
 
-                    // Send the move to the server specifying it was a Kingside Castle
-                    Client.sendMove(new Packet(currentPosition, to, SpecialMove.KINGSIDE_CASTLE));
+                    moveStyle = SpecialMove.KINGSIDE_CASTLE;
                 }
 
                 // Check if the move is a Queenside Castle
@@ -135,15 +134,14 @@ public class Piece extends JLabel {
                     // Move the rook
                     board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
 
-                    // Send the move to the server specifying it was a Queenside castle
-                    Client.sendMove(new Packet(currentPosition, to, SpecialMove.QUEENSIDE_CASTLE));
+                    moveStyle =  SpecialMove.QUEENSIDE_CASTLE;
                 }
 
                 // The move is not a special move
                 else {
-
                     // Check if the piece is moving to an occupied cell
                     if (board[to.y][to.x] != null) {
+                        AudioPlayer.play(AudioType.TAKE);
 
                         // If the cell is occupied by an allied piece just do nothing
                         if (board[to.y][to.x].getColor() == pieceColor) {
@@ -152,21 +150,24 @@ public class Piece extends JLabel {
 
                         // Eat the piece
                         board[to.y][to.x].kill();
-                    }
-
-                    // Check if the piece is a pawn, and it's going to promote
-                    if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
-
-                        // Send the server the move specifying a change in the piece's type
-                        PieceType promoteType = Game.promote(this, to);
-                        Client.sendMove(new Packet(currentPosition, to, promoteType));
                     } else {
-                        Client.sendMove(new Packet(currentPosition, to));
+                        AudioPlayer.play(AudioType.MOVE);
                     }
                 }
 
-                // Change the position in the client
-                this.setPosition(to);
+                // Check if the piece is a pawn, and it's going to promote
+                if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
+                    PieceMoves promoteType = Game.inputPromotionType();
+                    Game.promote(this, promoteType, to);
+
+                    // Send the server the move specifying a change in the piece's type
+                    Client.sendMove(new Packet(currentPosition, to, PieceType.valueOf(promoteType.toString())));
+                } else {
+                    Client.sendMove(new Packet(currentPosition, to, moveStyle));
+
+                    // Change the position in the client
+                    this.setPosition(to);
+                }
 
                 hasMoved = true;
 
@@ -184,16 +185,18 @@ public class Piece extends JLabel {
         this.setPosition(currentPosition);
     }
 
-    // TODO ?
     public void setPosition(Point newPosition) {
         if (currentPosition.x != -1 && currentPosition.y != -1) {
             Game.editBoardCell(currentPosition, null);
         }
 
+        // Set the new position to the JLabel
         this.setLocation(newPosition.x * Game.CELL_SIZE, newPosition.y * Game.CELL_SIZE);
 
+        // Set the new position on the data board
         Game.editBoardCell(newPosition, this);
 
+        // Set the new position at the piece
         currentPosition = newPosition;
     }
 
@@ -202,6 +205,7 @@ public class Piece extends JLabel {
      * Kill the piece
      */
     public void kill() {
+//        System.out.println(this.getType());
         Game.editBoardCell(currentPosition, null);
 
         Game.chessboardPanel.remove(this);

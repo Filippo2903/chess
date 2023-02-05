@@ -18,9 +18,9 @@ public class Game {
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
     // The board where all the pieces will be stored
-    private static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
+    public static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
     private static final JLabel fromCell = new JLabel(),
-            toCell = new JLabel();
+                                toCell = new JLabel();
     public static JPanel chessboardPanel;
     private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
@@ -45,7 +45,6 @@ public class Game {
 
     /**
      * Edit a cell of the data board
-     *
      * @param cell  Cell to edit
      * @param value Value to assign to the cell
      */
@@ -53,28 +52,23 @@ public class Game {
         board[cell.y][cell.x] = value;
     }
 
-    public static void setFromCellVisible() {
-        fromCell.setVisible(true);
-    }
-
-    public static void setToCellVisible() {
-        toCell.setVisible(true);
-    }
-
     public static void setPositionFromCell(Point cell) {
+        fromCell.setVisible(true);
         fromCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
 
     public static void setPositionToCell(Point cell) {
+        toCell.setVisible(true);
         toCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
 
-    public static PieceType promote(Piece piece, Point promotingCell) {
+    public static PieceMoves inputPromotionType() {
+        return PieceMoves.QUEEN;
+    }
+
+    public static void promote(Piece piece, PieceMoves promoteType, Point promotingCell) {
         // Kill the old piece
         piece.kill();
-
-        // Create a new piece with the same color and the new type
-        PieceMoves promoteType = PieceMoves.QUEEN;
 
         Piece promotedPiece = new Piece(piece.getColor(), promoteType);
 
@@ -89,9 +83,6 @@ public class Game {
         // Add the piece to the UI
         chessboardPanel.add(promotedPiece);
         chessboardPanel.setComponentZOrder(promotedPiece, 0);
-        chessboardPanel.repaint();
-
-        return promoteType.type;
     }
 
     public static Point[] getEnemyMove() {
@@ -111,8 +102,7 @@ public class Game {
         editBoardCell(packet.from, null);
 
         // Check if the move is special
-        if (packet.specialMove == SpecialMove.NONE || packet.specialMove == null) {
-
+        if (packet.specialMove == null) {
             // If the cell where the piece is moved is occupied, kill the piece
             if (board[packet.to.y][packet.to.x] != null) {
                 board[packet.to.y][packet.to.x].kill();
@@ -143,19 +133,21 @@ public class Game {
             board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
         }
 
+        if (packet.specialMove == null && board[packet.to.y][packet.to.x] == null) {
+            AudioPlayer.play(AudioType.MOVE);
+        }
+
         // Move the piece to the target cell
         enemyPiece.animatedMove(packet.to);
 
         // Check if the piece type has to change
-        if (packet.newType != null) {
-            promote(enemyPiece, packet.to);
+        if (packet.newType != null && packet.to.y == 7) {
+            promote(enemyPiece, PieceMoves.valueOf(packet.newType.toString()), packet.to);
         }
 
         // Update the from and to cell highlights
-        fromCell.setLocation(packet.from.x * CELL_SIZE, packet.from.y * CELL_SIZE);
-        toCell.setLocation(packet.to.x * CELL_SIZE, packet.to.y * CELL_SIZE);
-        setFromCellVisible();
-        setToCellVisible();
+        setPositionFromCell(packet.from);
+        setPositionToCell(packet.to);
 
         // Change the player turn
         changePlayerTurn();
@@ -222,7 +214,7 @@ public class Game {
     }
 
     private void initHighlightedCells() {
-        Color HIGHLIGHTED_CELL = new Color(237, 255, 33, 180);
+        Color HIGHLIGHTED_CELL = new Color(237, 255, 33, 150);
 
         fromCell.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
         fromCell.setBackground(HIGHLIGHTED_CELL);

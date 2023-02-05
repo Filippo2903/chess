@@ -1,6 +1,6 @@
 package client;
 
-import client.Movements.*;
+import client.movements.*;
 import gameUtils.PieceType;
 
 import java.util.ArrayList;

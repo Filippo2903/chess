@@ -23,7 +23,7 @@ public class Packet implements Serializable {
     }
 
     public Packet(Point from, Point to) {
-        this(from, to, SpecialMove.NONE, null, true);
+        this(from, to, null, null, true);
     }
 
     public Packet(Point from, Point to, SpecialMove specialMove) {
@@ -31,7 +31,7 @@ public class Packet implements Serializable {
     }
 
     public Packet(Point from, Point to, boolean continuePlaying) {
-        this(from, to, SpecialMove.NONE, null, continuePlaying);
+        this(from, to, null, null, continuePlaying);
     }
 
     /**

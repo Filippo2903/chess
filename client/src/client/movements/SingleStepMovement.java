@@ -1,20 +1,18 @@
-package client.Movements;
+package client.movements;
 
 import client.Game;
 import client.Piece;
 
 import java.awt.Point;
 
-public class DoubleStepMovement implements Movement {
+public class SingleStepMovement implements Movement {
     @Override
     public boolean canMove(Point from, Point to) {
-        final int START_ROW = 6;
         Piece[][] board = Game.getBoard();
-        Point move = new Point(0, -2);
+        Point move = new Point(0, -1);
 
         return
             MovementUtils.checkMove(from, to, move) &&
-            from.y == START_ROW &&
             board[to.y][to.x] == null;
     }
 }
