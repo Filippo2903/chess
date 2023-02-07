@@ -1,8 +1,9 @@
 package client.movements;
 
 import client.Game;
-import client.Piece;
+import client.piece.Piece;
 import gameUtils.PieceType;
+import gameUtils.SpecialMoveType;
 
 import java.awt.Point;
 
@@ -26,8 +27,8 @@ public class EnPassant implements Movement {
         for (Point move : moves) {
             if (MovementUtils.checkMove(from, to, move) &&
                 from.y == EN_PASSANT_ROW &&
-                board[to.y + 1][to.x] != null &&
-                board[to.y + 1][to.x].getType() == PieceType.PAWN &&
+                board[from.y][to.x] != null &&
+                board[from.y][to.x].getType() == PieceType.PAWN &&
                 enemyMove[FROM].x == to.x &&
                 enemyMove[FROM].y == START_ROW &&
                 enemyMove[TO].y == EN_PASSANT_ROW) {
@@ -37,5 +38,10 @@ public class EnPassant implements Movement {
         }
 
         return false;
+    }
+
+    @Override
+    public SpecialMoveType getSpecialMove() {
+        return SpecialMoveType.EN_PASSANT;
     }
 }

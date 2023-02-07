@@ -1,15 +1,11 @@
-package client;
+package client.piece;
 
-import client.audio.AudioPlayer;
-import client.audio.AudioType;
-import client.movements.EnPassant;
-import client.movements.KingsideCastle;
+import client.Client;
+import client.Game;
 import client.movements.Movement;
-import client.movements.QueensideCastle;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
-import gameUtils.SpecialMove;
 import modal.ErrorPopup;
 
 import javax.swing.*;
@@ -28,7 +24,6 @@ public class Piece extends JLabel {
         super();
 
         this.pieceColor = playerColor;
-
         this.pieceMoves = pieceMoves;
 
         this.setHorizontalAlignment(JLabel.LEFT);
@@ -37,7 +32,7 @@ public class Piece extends JLabel {
         this.setVisible(true);
         
         DragAndDrop dragAndDrop = new DragAndDrop(this);
-        
+
         this.addMouseListener(dragAndDrop);
         this.addMouseMotionListener(dragAndDrop);
     }
@@ -49,8 +44,8 @@ public class Piece extends JLabel {
     public void animatedMove(Point to) {
         int fps = 60;
 
-        double duration = 1;
-        int frame = (int) (fps * duration);
+        double duration = 200;
+        int frame = (int) (fps * (duration / 1000));
 
         Point animationPosition = new Point(currentPosition.x * Game.CELL_SIZE, currentPosition.y * Game.CELL_SIZE);
         Point goalAnimation = new Point(to.x * Game.CELL_SIZE, to.y * Game.CELL_SIZE);
@@ -58,8 +53,8 @@ public class Piece extends JLabel {
         int widthDifference = goalAnimation.x - animationPosition.x;
         int heightDifference = goalAnimation.y - animationPosition.y;
 
-        double stepWidth = (double) widthDifference / frame;
-        double stepHeight = (double) heightDifference / frame;
+        double stepWidth = (double)widthDifference / frame;
+        double stepHeight = (double)heightDifference / frame;
 
         for (int stepCount = 0; stepCount < frame; stepCount++) {
             animationPosition.x += stepWidth;
@@ -68,7 +63,7 @@ public class Piece extends JLabel {
             this.setLocation(animationPosition);
 
             try {
-                Thread.sleep((long) (duration * 100) / frame);
+                Thread.sleep((long) duration / frame);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -83,7 +78,10 @@ public class Piece extends JLabel {
      */
     public void move(Point to) {
         // If it's not the client turn or the client tries to move a piece that isn't his, don't move
-        if (CheckPlayerMove.isNotPlayerTurn() || CheckPlayerMove.isNotPlayerPiece(this.getColor())) {
+        if (CheckPlayerMove.isNotPlayerTurn() ||
+            CheckPlayerMove.isNotPlayerPiece(this.getColor()) ||
+            CheckPlayerMove.isMovingOnHisOwnPiece(this.getColor(), to)) {
+
             this.setPosition(currentPosition);
             return;
         }
@@ -97,68 +95,11 @@ public class Piece extends JLabel {
         // Check if the piece can move to the desired cell
         for (Movement movement : pieceMoves.movements) {
             if (movement.canMove(currentPosition, to)) {
-                SpecialMove moveStyle = null;
-
                 // Add the from and to cells highlights
                 Game.setPositionFromCell(currentPosition);
                 Game.setPositionToCell(to);
 
-                // Fetch the board from the game
-                Piece[][] board = Game.getBoard();
-
-                // Check if the move is an En Passant
-                if (movement.getClass() == EnPassant.class) {
-                    AudioPlayer.play(AudioType.TAKE);
-
-                    // Kill the passed pawn
-                    board[to.y + 1][to.x].kill();
-
-                    moveStyle = SpecialMove.EN_PASSANT;
-                }
-
-                // Check if the move is a Kingside Castle
-                else if (movement.getClass() == KingsideCastle.class) {
-                    AudioPlayer.play(AudioType.CASTLE);
-
-                    final Point ROOK_START_POSITION = new Point(7, 7);
-                    final Point ROOK_ARRIVAL_POSITION = new Point(5, 7);
-
-                    // Move the rook
-                    board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
-
-                    moveStyle = SpecialMove.KINGSIDE_CASTLE;
-                }
-
-                // Check if the move is a Queenside Castle
-                else if (movement.getClass() == QueensideCastle.class) {
-                    AudioPlayer.play(AudioType.CASTLE);
-
-                    final Point ROOK_START_POSITION = new Point(0, 7);
-                    final Point ROOK_ARRIVAL_POSITION = new Point(3, 7);
-
-                    // Move the rook
-                    board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
-
-                    moveStyle =  SpecialMove.QUEENSIDE_CASTLE;
-                }
-
-                // The move is not a special move
-                else {
-                    // Check if the piece is moving to an occupied cell
-                    if (board[to.y][to.x] != null) {
-                        AudioPlayer.play(AudioType.TAKE);
-
-                        // If the cell is occupied by an allied piece just do nothing
-                        if (board[to.y][to.x].getColor() == pieceColor) {
-                            return;
-                        }
-
-                        // Eat the piece
-                        board[to.y][to.x].kill();
-                    } else {
-                        AudioPlayer.play(AudioType.MOVE);
-                    }
-                }
+                SpecialMovesMap.specialMovesMap.get(movement.getSpecialMove()).move(currentPosition, to);
 
                 // Check if the piece is a pawn, and it's going to promote
                 if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
@@ -168,7 +109,7 @@ public class Piece extends JLabel {
                     // Send the server the move specifying a change in the piece's type
                     Client.sendMove(new Packet(currentPosition, to, PieceType.valueOf(promoteType.toString())));
                 } else {
-                    Client.sendMove(new Packet(currentPosition, to, moveStyle));
+                    Client.sendMove(new Packet(currentPosition, to, movement.getSpecialMove()));
 
                     // Change the position in the client
                     this.setPosition(to);

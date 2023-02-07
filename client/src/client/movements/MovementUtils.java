@@ -1,7 +1,7 @@
 package client.movements;
 
 import client.Game;
-import client.Piece;
+import client.piece.Piece;
 
 import java.awt.Point;
 

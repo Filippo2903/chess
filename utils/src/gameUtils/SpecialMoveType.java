@@ -1,6 +1,6 @@
 package gameUtils;
 
-public enum SpecialMove {
+public enum SpecialMoveType {
     EN_PASSANT,
     KINGSIDE_CASTLE,
     QUEENSIDE_CASTLE

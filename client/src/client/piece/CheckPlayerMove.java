@@ -1,6 +1,9 @@
-package client;
+package client.piece;
 
+import client.Game;
 import gameUtils.PlayerColor;
+
+import java.awt.Point;
 
 public class CheckPlayerMove {
     /**
@@ -18,5 +21,16 @@ public class CheckPlayerMove {
      */
     public static boolean isNotPlayerTurn() {
         return Game.getPlayerTurn() != Game.getPlayerColor();
+    }
+
+    /**
+     * Check if the player is moving on his own piece
+     * @param color color of the player
+     * @param cell where the player is trying to move
+     * @return true if it is his piece, otherwise false
+     */
+    public static boolean isMovingOnHisOwnPiece(PlayerColor color, Point cell) {
+        Piece[][] board = Game.getBoard();
+        return board[cell.y][cell.x] != null && board[cell.y][cell.x].getColor() == color;
     }
 }

@@ -1,4 +1,6 @@
-package client;
+package client.piece;
+
+import client.Game;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;

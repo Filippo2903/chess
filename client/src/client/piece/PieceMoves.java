@@ -1,4 +1,4 @@
-package client;
+package client.piece;
 
 import client.movements.*;
 import gameUtils.PieceType;

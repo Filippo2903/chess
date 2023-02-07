@@ -1,8 +1,9 @@
 package client.movements;
 
 import client.Game;
-import client.Piece;
+import client.piece.Piece;
 import gameUtils.PieceType;
+import gameUtils.SpecialMoveType;
 
 import java.awt.Point;
 
@@ -25,5 +26,10 @@ public class QueensideCastle implements Movement {
             board[ROOK_POSITION.y][ROOK_POSITION.x].getType() == PieceType.ROOK &&
             board[ROOK_POSITION.y][ROOK_POSITION.x].hasMoved() == false &&
             MovementUtils.isPathFree(KING_POSITION, ROOK_POSITION, new Point(-1, 0));
+    }
+
+    @Override
+    public SpecialMoveType getSpecialMove() {
+        return SpecialMoveType.QUEENSIDE_CASTLE;
     }
 }

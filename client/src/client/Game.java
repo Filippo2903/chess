@@ -1,11 +1,13 @@
 package client;
 
+import client.piece.Piece;
+import client.piece.PieceMoves;
+import client.piece.SpecialMovesMap;
 import client.audio.AudioPlayer;
 import client.audio.AudioType;
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PlayerColor;
-import gameUtils.SpecialMove;
 import themes.CustomTheme;
 
 import javax.swing.*;
@@ -28,6 +30,7 @@ public class Game {
     private static Point[] enemyMove = new Point[2];
     private final JFrame window = new JFrame();
 
+    /** DEBUG **/
     public static void printBoard() {
         for (Piece[] line : board) {
               for(Piece piece : line) {
@@ -37,6 +40,7 @@ public class Game {
         }
         System.out.println();
     }
+    /** DEBUG **/
 
     public static PlayerColor getPlayerColor() {
         return clientColor;
@@ -112,47 +116,9 @@ public class Game {
         // Delete previous position
         editBoardCell(packet.from, null);
 
-        // Check if the move is special
-        if (packet.specialMove == null) {
-            // If the cell where the piece is moved is occupied, kill the piece
-            if (board[packet.to.y][packet.to.x] != null) {
-                AudioPlayer.play(AudioType.TAKE);
+        SpecialMovesMap.specialMovesMap.get(packet.specialMoveType).move(packet.from, packet.to);
 
-                board[packet.to.y][packet.to.x].kill();
-            }
-        }
-
-        // Check if the move is an En Passant
-        else if (packet.specialMove == SpecialMove.EN_PASSANT) {
-            AudioPlayer.play(AudioType.TAKE);
-
-            Piece eatenPiece = board[packet.to.y - 1][packet.to.x];
-            eatenPiece.kill();
-        }
-
-        // Check if the move is a Kingside Castle
-        else if (packet.specialMove == SpecialMove.KINGSIDE_CASTLE) {
-            AudioPlayer.play(AudioType.CASTLE);
-
-            final Point ROOK_START_POSITION = new Point(7, 0);
-            final Point ROOK_ARRIVAL_POSITION = new Point(5, 0);
-
-            // Move the rook
-            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
-        }
-
-        // Check if the move is a Queenside Castle
-        else if (packet.specialMove == SpecialMove.QUEENSIDE_CASTLE) {
-            AudioPlayer.play(AudioType.CASTLE);
-
-            final Point ROOK_START_POSITION = new Point(0, 0);
-            final Point ROOK_ARRIVAL_POSITION = new Point(3, 0);
-
-            // Move the rook
-            board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
-        }
-
-        if (packet.specialMove == null && board[packet.to.y][packet.to.x] == null) {
+        if (packet.specialMoveType == null && board[packet.to.y][packet.to.x] == null) {
             AudioPlayer.play(AudioType.MOVE);
         }
 
@@ -167,6 +133,8 @@ public class Game {
         // Update the from and to cell highlights
         setPositionFromCell(packet.from);
         setPositionToCell(packet.to);
+
+        Game.chessboardPanel.repaint();
 
         // Change the player turn
         changePlayerTurn();
@@ -254,7 +222,7 @@ public class Game {
      */
     private void initChessboard() {
         final Color BLACK_CELL = new Color(0xFFEFD5),
-                WHITE_CELL = new Color(0x654321);
+                    WHITE_CELL = new Color(0x654321);
 
         // Create and paint the background of the panel that will contain the chessboard
         chessboardPanel = new JPanel() {
@@ -276,7 +244,7 @@ public class Game {
         };
 
         chessboardPanel.setBounds(MARGIN, MARGIN, CELL_SIZE * DIM_CHESSBOARD, CELL_SIZE * DIM_CHESSBOARD);
-        chessboardPanel.setBackground(Color.blue);
+        chessboardPanel.setBackground(Color.WHITE);
         chessboardPanel.setBorder(BorderFactory.createLineBorder(Color.black, 2));
         chessboardPanel.setLayout(null);
 
@@ -313,28 +281,20 @@ public class Game {
 
                 // Add pieces
                 piece = new Piece(playerColor, pieceMoves);
-
-                board[playerColor == clientColor ? 7 : 0][x] = piece;
-
                 piece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
-
                 piece.setImage();
-
                 piece.setPosition(new Point(x, (playerColor == clientColor ? 7 : 0)));
 
+                board[playerColor == clientColor ? 7 : 0][x] = piece;
                 chessboardPanel.add(piece);
 
                 // Add pawns
                 piece = new Piece(playerColor, PieceMoves.PAWN);
-
-                board[playerColor == clientColor ? 6 : 1][x] = piece;
-
                 piece.setBounds(-1, -1, CELL_SIZE, CELL_SIZE);
-
                 piece.setImage();
-
                 piece.setPosition(new Point(x, (playerColor == clientColor ? 6 : 1)));
 
+                board[playerColor == clientColor ? 6 : 1][x] = piece;
                 chessboardPanel.add(piece);
             }
         }

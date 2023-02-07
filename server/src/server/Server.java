@@ -34,10 +34,6 @@ public class Server {
             return false;
         }
 
-        if (packet.newType != null && packet.to.y == 7) {
-            // TODO sostituzione pezzo
-        }
-
         try {
             player.getOpponent().send(Objects.requireNonNull(packet).serializeToString());
         } catch (IOException e) {
