@@ -28,7 +28,7 @@ public class Game {
     private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
     private static Point[] enemyMove = new Point[2];
-    private final JFrame window = new JFrame();
+    private static final JFrame window = new JFrame();
 
     /** DEBUG **/
     public static void printBoard() {
@@ -78,6 +78,10 @@ public class Game {
     }
 
     public static PieceMoves inputPromotionType() {
+//        JPanel promotePopUp = new JPanel();
+//        promotePopUp.setBounds(10, 10, 100, 100);
+//        promotePopUp.setBackground(Color.GREEN);
+//        window.add(promotePopUp);
         return PieceMoves.QUEEN;
     }
 

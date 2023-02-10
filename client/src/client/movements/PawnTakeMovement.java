@@ -6,13 +6,14 @@ import client.piece.Piece;
 import java.awt.Point;
 
 public class PawnTakeMovement implements Movement {
+    private final Point[] moves = {
+            new Point(-1, -1),
+            new Point(1, -1)
+    };
+
     @Override
     public boolean canMove(Point from, Point to) {
         Piece[][] board = Game.getBoard();
-        Point[] moves = {
-                new Point(-1, -1),
-                new Point(1, -1)
-        };
 
         for (Point move : moves) {
             if (MovementUtils.checkMove(from, to, move) &&

@@ -13,6 +13,8 @@ import javax.swing.*;
 import java.awt.Point;
 import java.awt.Image;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Piece extends JLabel {
     public Point currentPosition = new Point(-1, -1);
@@ -72,6 +74,32 @@ public class Piece extends JLabel {
         this.setPosition(to);
     }
 
+    public boolean canMove(Point to) {
+        for (Movement movement : pieceMoves.movements) {
+            if (movement.canMove(currentPosition, to))
+                return true;
+        }
+
+        return false;
+    }
+
+    private boolean isKingInCheck(Piece[][] board) {
+        for (int x = 0; x < Game.DIM_CHESSBOARD; x++) {
+            for (int y = 0; y < Game.DIM_CHESSBOARD; y++) {
+                if (board[y][x] != null &&
+                    board[y][x].getType() == PieceType.KING &&
+                    board[y][x].getColor() == pieceColor) {
+
+                    if (Check.isInCheck(new Point(x, y), pieceColor, board)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Move a piece to a point
      * @param to Arrival cell
@@ -95,27 +123,48 @@ public class Piece extends JLabel {
         // Check if the piece can move to the desired cell
         for (Movement movement : pieceMoves.movements) {
             if (movement.canMove(currentPosition, to)) {
-                // Add the from and to cells highlights
-                Game.setPositionFromCell(currentPosition);
-                Game.setPositionToCell(to);
+                if (this.getType() == PieceType.KING && Check.isInCheck(to, pieceColor, Game.getBoard())) {
+                    continue;
+                }
 
                 SpecialMovesMap.specialMovesMap.get(movement.getSpecialMove()).move(currentPosition, to);
 
                 // Check if the piece is a pawn, and it's going to promote
                 if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
                     PieceMoves promoteType = Game.inputPromotionType();
+
+                    // Add the from and to cells highlights
+                    Game.setPositionFromCell(currentPosition);
+                    Game.setPositionToCell(to);
+
                     Game.promote(this, promoteType, to);
 
                     // Send the server the move specifying a change in the piece's type
                     Client.sendMove(new Packet(currentPosition, to, PieceType.valueOf(promoteType.toString())));
                 } else {
+                    Piece[][] temporaryBoard = Arrays.stream(Game.getBoard())
+                            .map(row -> Arrays.copyOf(row, row.length))
+                            .toArray(Piece[][]::new);
+                    temporaryBoard[currentPosition.y][currentPosition.x] = null;
+                    temporaryBoard[to.y][to.x] = this;
+
+                    if (isKingInCheck(temporaryBoard)) {
+                        continue;
+                    }
+
                     Client.sendMove(new Packet(currentPosition, to, movement.getSpecialMove()));
+
+                    // Add the from and to cells highlights
+                    Game.setPositionFromCell(currentPosition);
+                    Game.setPositionToCell(to);
 
                     // Change the position in the client
                     this.setPosition(to);
                 }
 
-                hasMoved = true;
+                if (!hasMoved) {
+                    hasMoved = true;
+                }
 
                 Game.changePlayerTurn();
 
