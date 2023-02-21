@@ -1,6 +1,6 @@
 package client.piece;
 
-import client.movements.*;
+import client.movements.LMovement;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 

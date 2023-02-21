@@ -13,7 +13,6 @@ import javax.swing.*;
 import java.awt.Point;
 import java.awt.Image;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Piece extends JLabel {
@@ -89,10 +88,14 @@ public class Piece extends JLabel {
                 if (board[y][x] != null &&
                     board[y][x].getType() == PieceType.KING &&
                     board[y][x].getColor() == pieceColor) {
-
-                    if (Check.isInCheck(new Point(x, y), pieceColor, board)) {
-                        return true;
-                    }
+//                    System.out.println("King x: " + x + " y: " + y);
+//                    System.out.print(!Check.isCellAttacked(board[y][x].currentPosition, pieceColor, board) ? "Is not " : "Is ");
+//                    System.out.println("in check");
+//                    System.out.println();
+//                    Game.printBoard(board);
+//                    System.out.println();
+//                    System.out.println();
+                    return Check.isCellAttacked(new Point(x, y), pieceColor, board);
                 }
             }
         }
@@ -110,20 +113,21 @@ public class Piece extends JLabel {
             CheckPlayerMove.isNotPlayerPiece(this.getColor()) ||
             CheckPlayerMove.isMovingOnHisOwnPiece(this.getColor(), to)) {
 
-            this.setPosition(currentPosition);
+            this.setLocation(currentPosition.x * Game.CELL_SIZE, currentPosition.y * Game.CELL_SIZE);
             return;
         }
 
         // If the piece is moved where he already is, don't move
         if (to.x == currentPosition.x && to.y == currentPosition.y) {
-            this.setPosition(currentPosition);
+            this.setLocation(currentPosition.x * Game.CELL_SIZE, currentPosition.y * Game.CELL_SIZE);
             return;
         }
 
         // Check if the piece can move to the desired cell
         for (Movement movement : pieceMoves.movements) {
             if (movement.canMove(currentPosition, to)) {
-                if (this.getType() == PieceType.KING && Check.isInCheck(to, pieceColor, Game.getBoard())) {
+                if (this.getType() == PieceType.KING && Check.isCellAttacked(to, pieceColor, Game.getBoard())) {
+                    System.out.println("Socsa");
                     continue;
                 }
 
@@ -145,6 +149,7 @@ public class Piece extends JLabel {
                     Piece[][] temporaryBoard = Arrays.stream(Game.getBoard())
                             .map(row -> Arrays.copyOf(row, row.length))
                             .toArray(Piece[][]::new);
+
                     temporaryBoard[currentPosition.y][currentPosition.x] = null;
                     temporaryBoard[to.y][to.x] = this;
 
