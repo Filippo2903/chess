@@ -31,8 +31,8 @@ public class Game {
     private static final JFrame window = new JFrame();
 
     /** DEBUG **/
-    public static void printBoard() {
-        for (Piece[] line : board) {
+    public static void printBoard(Piece[][] _board) {
+        for (Piece[] line : _board) {
               for(Piece piece : line) {
                       System.out.print(piece == null ? "   " : (piece.getColor().toString().charAt(0) + piece.getType().algebraicNotation) + " ");
               }
