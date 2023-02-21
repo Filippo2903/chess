@@ -5,8 +5,10 @@ import client.piece.PieceMoves;
 import client.piece.SpecialMovesMap;
 import client.audio.AudioPlayer;
 import client.audio.AudioType;
+import client.popup.PromotionPopup;
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
+import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import themes.CustomTheme;
 
@@ -78,10 +80,9 @@ public class Game {
     }
 
     public static PieceMoves inputPromotionType() {
-//        JPanel promotePopUp = new JPanel();
-//        promotePopUp.setBounds(10, 10, 100, 100);
-//        promotePopUp.setBackground(Color.GREEN);
-//        window.add(promotePopUp);
+        Object ref = new Object(){
+            PieceType pieceType;
+        };
         return PieceMoves.QUEEN;
     }
 

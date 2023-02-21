@@ -6,6 +6,7 @@ import gameUtils.*;
 import modal.ErrorPopup;
 import modal.Theme;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,6 +14,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 
 public class Client {
     private static PrintWriter os = null;
@@ -60,12 +62,27 @@ public class Client {
 
         System.out.println("Starting client...");
 
-        InetAddress address = InetAddress.getLocalHost();
+        String stringAddress;
+
+        InetAddress address = null;
+        boolean valid;
+
+        do {
+            stringAddress = JOptionPane.showInputDialog("Inserisci l'indirizzo del server", "127.0.0.1");
+            try {
+                address = InetAddress.getByName(stringAddress);
+                valid = true;
+            } catch (UnknownHostException e) {
+                valid = false;
+                ErrorPopup.show("Indirizzo non valido!");
+            }
+        } while(!valid);
 
         game = new Game();
         game.startWindow();
 
         // Try connecting to the server
+        System.out.println("Connecting to the server...");
         while (true) {
             try {
                 socket = new Socket(address, 4445);
@@ -74,8 +91,9 @@ public class Client {
 
                 break;
             } catch (Exception e) {
+                System.out.println("Connection failed, retrying in 3s...");
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(3000) ;
                 } catch (InterruptedException err) {
                     throw new RuntimeException(e);
                 }
