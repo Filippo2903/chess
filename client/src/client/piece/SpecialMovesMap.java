@@ -10,6 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SpecialMovesMap {
+
+    /**
+     * Move the rook and a king to make the castle move
+     * @param castleSide The side where to castle
+     * @param cell The cell to castle
+     */
     private static void castle(SpecialMoveType castleSide, Point cell) {
         AudioPlayer.play(AudioType.CASTLE);
 

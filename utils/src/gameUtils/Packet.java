@@ -18,18 +18,41 @@ public class Packet implements Serializable {
 
     public final PieceType newType;
 
+    /**
+     * Create a packet that represents a promotion
+     * @param from The starting cell
+     * @param to The arrival cell
+     * @param newType The promoted type
+     */
     public Packet(Point from, Point to, PieceType newType) {
         this(from, to, null, newType, true);
     }
 
+    /**
+     * Create a packet that represents a simple move
+     * @param from The starting cell
+     * @param to The arrival cell
+     */
     public Packet(Point from, Point to) {
         this(from, to, null, null, true);
     }
 
+    /**
+     * Creata a packet that represents a special move
+     * @param from The starting cell
+     * @param to The arrival cell
+     * @param specialMoveType The special move that has been made
+     */
     public Packet(Point from, Point to, SpecialMoveType specialMoveType) {
         this(from, to, specialMoveType, null, true);
     }
 
+    /**
+     * Create a packet that specifies if the game is over
+     * @param from The starting cell
+     * @param to The arrival cell
+     * @param continuePlaying Is the game over?
+     */
     public Packet(Point from, Point to, boolean continuePlaying) {
         this(from, to, null, null, continuePlaying);
     }

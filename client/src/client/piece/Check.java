@@ -4,6 +4,8 @@ import client.movements.LMovement;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 
+import client.Game;
+
 import java.awt.Point;
 
 public class Check {
@@ -14,6 +16,11 @@ public class Check {
     }
 
     public static boolean isCellAttacked(Point cell, PlayerColor pieceColor, Piece[][] board) {
+        System.out.println("===");
+        Game.printBoard(board);
+        System.out.println("Checking cell x: " + cell.x + " y: " + cell.y + " (" + board[cell.y][cell.x].getType() + board[cell.y][cell.x].getColor() + ")");
+        System.out.println("===\n\n");
+
         final Point[] pawnTakeMoves = { new Point(-1, -1), new Point(1, -1) };
 
         for (Point pawnTakeMove : pawnTakeMoves) {
@@ -22,6 +29,7 @@ public class Check {
                 board[cell.y + pawnTakeMove.y][cell.x + pawnTakeMove.x].getType() == PieceType.PAWN &&
                 board[cell.y + pawnTakeMove.y][cell.x + pawnTakeMove.x].getColor() != pieceColor) {
 
+                System.out.println("Attacked by pawn");
                 return true;
             }
         }
@@ -32,6 +40,7 @@ public class Check {
                 board[cell.y + move.y][cell.x + move.x].getColor() != pieceColor &&
                 board[cell.y + move.y][cell.x + move.x].canMove(cell)) {
 
+                System.out.println("Attacked by knight");
                 return true;
             }
         }
@@ -66,6 +75,7 @@ public class Check {
             if (board[pathController.y][pathController.x].getColor() != pieceColor &&
                 board[pathController.y][pathController.x].canMove(cell)) {
 
+                System.out.println("Attacked by Bishop/Rook/Queen/King");
                 return true;
             }
         }

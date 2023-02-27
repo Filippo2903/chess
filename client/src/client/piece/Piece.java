@@ -2,6 +2,8 @@ package client.piece;
 
 import client.Client;
 import client.Game;
+import client.audio.AudioPlayer;
+import client.audio.AudioType;
 import client.movements.Movement;
 import gameUtils.Packet;
 import gameUtils.PieceType;
@@ -16,12 +18,20 @@ import java.awt.Image;
 import java.net.URL;
 import java.util.Arrays;
 
+/**
+ * A class that represents a Piece and handles all his features
+ */
 public class Piece extends JLabel {
     public Point currentPosition = new Point(-1, -1);
     private final PlayerColor pieceColor;
     private final PieceMoves pieceMoves;
     private boolean hasMoved = false;
 
+    /**
+     * Create a piece with the given color and possible moves
+     * @param playerColor The piece color
+     * @param pieceMoves The moves that can the piece make
+     */
     public Piece(PlayerColor playerColor, PieceMoves pieceMoves) {
         super();
 
@@ -74,6 +84,11 @@ public class Piece extends JLabel {
         this.setPosition(to);
     }
 
+    /**
+     * Check if the piece can move
+     * @param to The cell where the piece wants to move
+     * @return <code>true</code> if the piece can move, <code>false</code> if it can't move
+     */
     public boolean canMove(Point to) {
         for (Movement movement : pieceMoves.movements) {
             if (movement.canMove(currentPosition, to)) {
@@ -84,29 +99,8 @@ public class Piece extends JLabel {
         return false;
     }
 
-    private boolean isKingInCheck(Piece[][] board) {
-        for (int x = 0; x < Game.DIM_CHESSBOARD; x++) {
-            for (int y = 0; y < Game.DIM_CHESSBOARD; y++) {
-                if (board[y][x] != null &&
-                    board[y][x].getType() == PieceType.KING &&
-                    board[y][x].getColor() == pieceColor) {
-//                    System.out.println("King x: " + x + " y: " + y);
-//                    System.out.print(!Check.isCellAttacked(board[y][x].currentPosition, pieceColor, board) ? "Is not " : "Is ");
-//                    System.out.println("in check");
-//                    System.out.println();
-//                    Game.printBoard(board);
-//                    System.out.println();
-//                    System.out.println();
-                    return Check.isCellAttacked(new Point(x, y), pieceColor, board);
-                }
-            }
-        }
-
-        return false;
-    }
-
     /**
-     * Move a piece to a point
+     * Move a piece to a point with all the needed checks
      * @param to Arrival cell
      */
     public void move(Point to) {
@@ -181,9 +175,7 @@ public class Piece extends JLabel {
                     this.setPosition(to);
                 }
 
-                if (!hasMoved) {
-                    hasMoved = true;
-                }
+                hasMoved = true;
 
                 Game.changePlayerTurn();
 
@@ -200,6 +192,11 @@ public class Piece extends JLabel {
         this.setPosition(currentPosition);
     }
 
+    /**
+     * Set the piece position to a new position without checking for anything, except for checking if the piece is in
+     * the board
+     * @param newPosition The new piece position
+     */
     public void setPosition(Point newPosition) {
         // If the piece is inside the board
         if (currentPosition.x != -1 && currentPosition.y != -1) {
@@ -226,16 +223,41 @@ public class Piece extends JLabel {
         Game.chessboardPanel.repaint();
     }
 
+    /**
+     * Get the piece color
+     * @return The piece color
+     */
     public PlayerColor getColor() {
         return pieceColor;
     }
+
+    /**
+     * Get the piece type
+     * @return The piece type
+     */
     public PieceType getType() {
         return pieceMoves.type;
     }
+
+    /**
+     * Get the piece position
+     * @return The piece position
+     */
+    public Point getCurrentPosition() {
+        return currentPosition;
+    }
+
+    /**
+     * Get if the piece has moved
+     * @return <code>true</code> if the piece has moved, <code>false</code> if the piece has not moved
+     */
     public boolean hasMoved() {
         return hasMoved;
     }
 
+    /**
+     * Set the piece image
+     */
     public void setImage() {
         String iconName =
                 pieceColor.toString().toLowerCase() +

@@ -12,8 +12,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 
 public class Client {
     private static PrintWriter os = null;
@@ -53,10 +51,10 @@ public class Client {
         }
 
         // Move the enemy in the client
-        game.enemyMove(packet);
+        game.moveEnemy(packet);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Theme.setTheme();
 
         System.out.println("Starting client...");

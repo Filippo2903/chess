@@ -1,5 +1,6 @@
 package client;
 
+import client.piece.Check;
 import client.piece.Piece;
 import client.piece.PieceMoves;
 import client.piece.SpecialMovesMap;
@@ -17,11 +18,15 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * The class that stores and manages all the Game
+ */
 public class Game {
     public static final int DIM_CHESSBOARD = 8;
     private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 570;
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
+
     // The board where all the pieces will be stored
     public static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
     private static final JLabel fromCell = new JLabel(),
@@ -48,14 +53,25 @@ public class Game {
         return clientColor;
     }
 
+    /**
+     * Get the player who has to move
+     * @return The player
+     */
     public static PlayerColor getPlayerTurn() {
         return playerTurn;
     }
 
+    /**
+     * Get the board where all the pieces are stored
+     * @return The board
+     */
     public static Piece[][] getBoard() {
         return board;
     }
 
+    /**
+     * Change the client's player turn
+     */
     public static void changePlayerTurn() {
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
@@ -69,23 +85,62 @@ public class Game {
         board[cell.y][cell.x] = value;
     }
 
+    /**
+     * Set the FromCell position
+     * @param cell The position to set the FromCell
+     */
     public static void setPositionFromCell(Point cell) {
         fromCell.setVisible(true);
         fromCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
 
+    /**
+     * Set the ToCell position
+     * @param cell The position to set the ToCell
+     */
     public static void setPositionToCell(Point cell) {
         toCell.setVisible(true);
         toCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
 
+    /**
+     * Returns if the king is in check in the given board
+     * @param board The board to check
+     * @param kingColor The king's color to look for
+     * @return <code>true</code> if the king is in check, otherwise <code>false</code>
+     */
+    public static boolean isKingInCheck(Piece[][] board, PlayerColor kingColor) {
+//        System.out.println("===");
+//        Game.printBoard(board);
+
+        for (int x = 0; x < Game.DIM_CHESSBOARD; x++) {
+            for (int y = 0; y < Game.DIM_CHESSBOARD; y++) {
+                if (board[y][x] != null &&
+                    board[y][x].getType() == PieceType.KING &&
+                    board[y][x].getColor() == kingColor) {
+//                    System.out.println("Checking " + kingColor + " king at x: " + x + " y: " + y);
+
+                    boolean isCellAttacked = Check.isCellAttacked(new Point(x, y), kingColor, board);
+//                    System.out.println("Cell is" + (!isCellAttacked ? " not " : " ") + "attacked");
+
+                    return isCellAttacked;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static PieceMoves inputPromotionType() {
-        Object ref = new Object(){
-            PieceType pieceType;
-        };
         return PieceMoves.QUEEN;
     }
 
+    /**
+     * Promote a given piece
+     * @param piece The piece that has to promote
+     * @param promoteType The type the piece has to promote
+     * @param promotingCell The cell where the piece will be after promotion
+     */
     public static void promote(Piece piece, PieceMoves promoteType, Point promotingCell) {
         // Kill the old piece
         piece.kill();
@@ -105,6 +160,10 @@ public class Game {
         chessboardPanel.setComponentZOrder(promotedPiece, 0);
     }
 
+    /**
+     * Get the latest enemy move
+     * @return A pair of coordinates, (From, To)
+     */
     public static Point[] getEnemyMove() {
         return enemyMove;
     }
@@ -113,7 +172,7 @@ public class Game {
      * Move the enemy piece
      * @param packet Packet to get data from
      */
-    public void enemyMove(Packet packet) {
+    public void moveEnemy(Packet packet) {
         Piece enemyPiece = board[packet.from.y][packet.from.x];
 
         enemyMove = new Point[]{packet.from, packet.to};
@@ -154,11 +213,12 @@ public class Game {
     private void initPlayButton() {
         final int DIM_BUTTON_X = WINDOW_WIDTH / 2, DIM_BUTTON_Y = WINDOW_HEIGHT - (CELL_SIZE * DIM_CHESSBOARD + MARGIN * 3);
 
-        CustomTheme.setup();
-
         JButton playButton = new JButton("Play");
         playButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 38));
         playButton.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
+
+        playButton.setBackground(Color.decode("#DF3E28"));
+        playButton.setForeground(Color.decode("#FFFFFF"));
 
         playButton.setBounds(
                 WINDOW_WIDTH / 2 - DIM_BUTTON_X / 2,
@@ -219,6 +279,9 @@ public class Game {
         initPlayButton();
     }
 
+    /**
+     * Initialize the highlighted cells to highlight the last move that has been made
+     */
     private void initHighlightedCells() {
         Color HIGHLIGHTED_CELL = new Color(237, 255, 33, 150);
 

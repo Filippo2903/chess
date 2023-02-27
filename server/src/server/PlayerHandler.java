@@ -19,6 +19,8 @@ public class PlayerHandler {
 
     private PlayerHandler opponent;
 
+    private boolean ready = false;
+
     public PlayerHandler(PlayerColor playerColor) {
         this.playerColor = playerColor;
     }
@@ -32,6 +34,10 @@ public class PlayerHandler {
 
         System.out.println("Player " + playerColor + " connected!");
 
+        ready = true;
+
+        System.out.println("Player  "+ playerColor + " is ready (" + ready + ")");
+
         try {
             input = new Scanner(socket.getInputStream());
             output = new PrintWriter(socket.getOutputStream(), true);
@@ -40,8 +46,20 @@ public class PlayerHandler {
             System.exit(-1);
         }
 
+        while (!opponent.isReady()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         // Send the color
         output.println(playerColor);
+    }
+
+    public boolean isConnected() {
+        return socket.isConnected();
     }
 
     public String listenMove() {
@@ -52,21 +70,7 @@ public class PlayerHandler {
             serializedMove = input.nextLine();
         } catch (NoSuchElementException e) {
             System.out.println("Player " + playerColor + " disconnected");
-            Server.matchmaking();
-        }
-
-        return serializedMove;
-    }
-
-    public String listenTypePromotion() {
-        String serializedMove = null;
-
-        try {
-            // Wait from sender client
-            serializedMove = input.nextLine();
-        } catch (NoSuchElementException e) {
-            System.out.println("Player " + playerColor + " disconnected");
-            Server.matchmaking();
+            Server.startMatchmaking();
         }
 
         return serializedMove;
