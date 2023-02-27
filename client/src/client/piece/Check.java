@@ -9,8 +9,8 @@ import java.awt.Point;
 public class Check {
     private static boolean isInsideBoard(Point cell) {
         return
-            cell.y < 8 && cell.y >= 0 &&
-            cell.x  < 8 && cell.x >= 0;
+            cell.y < Game.DIM_CHESSBOARD && cell.y >= 0 &&
+            cell.x  < Game.DIM_CHESSBOARD && cell.x >= 0;
     }
 
     public static boolean isCellAttacked(Point cell, PlayerColor pieceColor, Piece[][] board) {
@@ -60,6 +60,8 @@ public class Check {
             if (!isInsideBoard(pathController)) {
                 continue;
             }
+
+            System.out.println("Path controller: " + pathController + " canMove: " + board[pathController.y][pathController.x].canMove(cell) + "\n\tpathController: " + board[pathController.y][pathController.x].getColor() + " " + board[pathController.y][pathController.x].getType() + " " + board[pathController.y][pathController.x].getCurrentPosition() + "\n\tcell: " + cell);
 
             if (board[pathController.y][pathController.x].getColor() != pieceColor &&
                 board[pathController.y][pathController.x].canMove(cell)) {

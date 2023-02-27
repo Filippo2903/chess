@@ -6,6 +6,7 @@ import client.movements.Movement;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
+import gameUtils.SpecialMoveType;
 import modal.ErrorPopup;
 
 import javax.swing.*;
@@ -75,8 +76,9 @@ public class Piece extends JLabel {
 
     public boolean canMove(Point to) {
         for (Movement movement : pieceMoves.movements) {
-            if (movement.canMove(currentPosition, to))
+            if (movement.canMove(currentPosition, to)) {
                 return true;
+            }
         }
 
         return false;
@@ -127,11 +129,34 @@ public class Piece extends JLabel {
         for (Movement movement : pieceMoves.movements) {
             if (movement.canMove(currentPosition, to)) {
                 if (this.getType() == PieceType.KING && Check.isCellAttacked(to, pieceColor, Game.getBoard())) {
-                    System.out.println("Socsa");
+                    continue;
+                }
+
+                if (Game.isKingInCheck(Game.board, pieceColor) &&
+                    (movement.getSpecialMove() == SpecialMoveType.KINGSIDE_CASTLE ||
+                     movement.getSpecialMove() == SpecialMoveType.QUEENSIDE_CASTLE)) {
+                    continue;
+                }
+
+                Piece[][] temporaryBoard = Arrays.stream(Game.getBoard())
+                        .map(row -> Arrays.copyOf(row, row.length))
+                        .toArray(Piece[][]::new);
+
+                temporaryBoard[currentPosition.y][currentPosition.x] = null;
+                temporaryBoard[to.y][to.x] = this;
+
+                if (Game.isKingInCheck(temporaryBoard, pieceColor)) {
                     continue;
                 }
 
                 SpecialMovesMap.specialMovesMap.get(movement.getSpecialMove()).move(currentPosition, to);
+
+                if (Game.board[to.y][to.x] != null) {
+                    AudioPlayer.play(AudioType.TAKE);
+                    Game.board[to.y][to.x].kill();
+                } else if (movement.getSpecialMove() == null){
+                    AudioPlayer.play(AudioType.MOVE);
+                }
 
                 // Check if the piece is a pawn, and it's going to promote
                 if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
@@ -146,17 +171,6 @@ public class Piece extends JLabel {
                     // Send the server the move specifying a change in the piece's type
                     Client.sendMove(new Packet(currentPosition, to, PieceType.valueOf(promoteType.toString())));
                 } else {
-                    Piece[][] temporaryBoard = Arrays.stream(Game.getBoard())
-                            .map(row -> Arrays.copyOf(row, row.length))
-                            .toArray(Piece[][]::new);
-
-                    temporaryBoard[currentPosition.y][currentPosition.x] = null;
-                    temporaryBoard[to.y][to.x] = this;
-
-                    if (isKingInCheck(temporaryBoard)) {
-                        continue;
-                    }
-
                     Client.sendMove(new Packet(currentPosition, to, movement.getSpecialMove()));
 
                     // Add the from and to cells highlights
@@ -174,8 +188,7 @@ public class Piece extends JLabel {
                 Game.changePlayerTurn();
 
                 // Start listening for the enemy move
-                Thread recieveThread = new Thread(Client::receiveMove);
-                recieveThread.start();
+                new Thread(Client::receiveMove).start();
 
                 Game.chessboardPanel.repaint();
 

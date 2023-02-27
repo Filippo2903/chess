@@ -5,21 +5,21 @@ import client.piece.PieceMoves;
 import client.piece.SpecialMovesMap;
 import client.audio.AudioPlayer;
 import client.audio.AudioType;
-import client.popup.PromotionPopup;
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
-import themes.CustomTheme;
+import modal.ErrorPopup;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
 
 public class Game {
     public static final int DIM_CHESSBOARD = 8;
-    private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 510; // 570
+    private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 570;
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
     // The board where all the pieces will be stored
@@ -123,7 +123,10 @@ public class Game {
 
         SpecialMovesMap.specialMovesMap.get(packet.specialMoveType).move(packet.from, packet.to);
 
-        if (packet.specialMoveType == null && board[packet.to.y][packet.to.x] == null) {
+        if (board[packet.to.y][packet.to.x] != null) {
+            AudioPlayer.play(AudioType.TAKE);
+            board[packet.to.y][packet.to.x].kill();
+        } else if (packet.specialMoveType == null) {
             AudioPlayer.play(AudioType.MOVE);
         }
 
@@ -163,7 +166,19 @@ public class Game {
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
 
+        URL path = ClassLoader.getSystemResource("loading.gif");
+        if (path == null) {
+            ErrorPopup.show(7);
+            System.exit(-1);
+        }
+
+        Image icon = new ImageIcon(path).getImage();
+        JLabel loadingGif = new JLabel();
+        loadingGif.setIcon(new ImageIcon(icon.getScaledInstance(Game.CELL_SIZE, Game.CELL_SIZE, Image.SCALE_SMOOTH)));
+
         playButton.addActionListener(e -> {
+            chessboardPanel.add(loadingGif);
+            new Thread(Client::createMatch).start();
         });
 
         window.add(playButton);
@@ -201,8 +216,7 @@ public class Game {
         window.setResizable(false);
         window.setVisible(true);
 
-        // TODO matchmaking
-        //initPlayButton();
+        initPlayButton();
     }
 
     private void initHighlightedCells() {

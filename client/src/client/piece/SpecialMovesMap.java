@@ -20,15 +20,11 @@ public class SpecialMovesMap {
         Game.board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
     }
 
-    public static final Map<SpecialMoveType, SpecialMove> specialMovesMap = new HashMap<SpecialMoveType, SpecialMove>() {{
-        put(null, (from, to) -> {
-            // If the cell where the piece is moved is occupied, kill the piece
-            if (Game.board[to.y][to.x] != null) {
-                AudioPlayer.play(AudioType.TAKE);
-
-                Game.board[to.y][to.x].kill();
-            }
-        });
+    /**
+     * A map that stores all the special moves
+     */
+    public static final Map<SpecialMoveType, SpecialMove> specialMovesMap = new HashMap<>() {{
+        put(null, (from, to) -> {});
 
         put(SpecialMoveType.KINGSIDE_CASTLE, (from, to) -> {
             castle(SpecialMoveType.KINGSIDE_CASTLE, from);

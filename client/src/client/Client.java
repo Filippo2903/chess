@@ -6,7 +6,6 @@ import gameUtils.*;
 import modal.ErrorPopup;
 import modal.Theme;
 
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -62,30 +61,32 @@ public class Client {
 
         System.out.println("Starting client...");
 
-        String stringAddress;
-
-        InetAddress address = null;
-        boolean valid;
-
-        do {
-            stringAddress = JOptionPane.showInputDialog("Inserisci l'indirizzo del server", "127.0.0.1");
-            try {
-                address = InetAddress.getByName(stringAddress);
-                valid = true;
-            } catch (UnknownHostException e) {
-                valid = false;
-                ErrorPopup.show("Indirizzo non valido!");
-            }
-        } while(!valid);
+//        String stringAddress;
+//
+//        InetAddress address = null;
+//        boolean valid;
+//
+//        do {
+//            stringAddress = JOptionPane.showInputDialog("Inserisci l'indirizzo del server", "127.0.0.1");
+//            try {
+//                address = InetAddress.getByName(stringAddress);
+//                valid = true;
+//            } catch (UnknownHostException e) {
+//                valid = false;
+//                ErrorPopup.show("Indirizzo non valido!");
+//            }
+//        } while(!valid);
 
         game = new Game();
         game.startWindow();
+    }
 
+    public static void createMatch() {
         // Try connecting to the server
         System.out.println("Connecting to the server...");
         while (true) {
             try {
-                socket = new Socket(address, 4445);
+                socket = new Socket(InetAddress.getLocalHost(), 4445);
                 is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 os = new PrintWriter(socket.getOutputStream(), true);
 
@@ -104,7 +105,7 @@ public class Client {
         String colorName = "";
         try {
             colorName = is.readLine();
-        } catch (SocketException e) {
+        } catch (IOException e) {
             ErrorPopup.show("Connection Reset");
             System.exit(-1);
         }
@@ -113,15 +114,15 @@ public class Client {
 
         game.startGame(color);
 
-        System.out.println("Client Address : " + address);
-
         System.out.println("Client has color " + color);
+
+        Game.chessboardPanel.repaint();
 
         AudioPlayer.play(AudioType.GAME_START);
 
         // If the client has black, it has to listen first
         if (color == PlayerColor.BLACK) {
-            receiveMove();
+            new Thread(Client::receiveMove).start();
         }
     }
 

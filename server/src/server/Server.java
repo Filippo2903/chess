@@ -63,8 +63,18 @@ public class Server {
         playerOne.setOpponent(playerTwo);
         playerTwo.setOpponent(playerOne);
 
-        playerOne.waitConnection();
-        playerTwo.waitConnection();
+        Thread playerOneThread = new Thread(playerOne::waitConnection);
+        Thread playerTwoThread = new Thread(playerTwo::waitConnection);
+
+        playerOneThread.start();
+        playerTwoThread.start();
+
+        try {
+            playerOneThread.join();
+            playerTwoThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         boolean playing = true;
         if (colorPlayerTwo == PlayerColor.WHITE) {

@@ -3,6 +3,7 @@ package server;
 import gameUtils.PlayerColor;
 import modal.ErrorPopup;
 
+import java.awt.desktop.ScreenSleepEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -22,9 +23,7 @@ public class PlayerHandler {
         this.playerColor = playerColor;
     }
 
-
     public void waitConnection() {
-        // Wait the connection
         try {
             socket = Server.serverSocket.accept();
         } catch (IOException e) {
@@ -88,5 +87,9 @@ public class PlayerHandler {
     }
     public void setPlayerColor(PlayerColor color) {
         playerColor = color;
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 }
