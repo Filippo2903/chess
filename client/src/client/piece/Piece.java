@@ -5,6 +5,7 @@ import client.Game;
 import client.audio.AudioPlayer;
 import client.audio.AudioType;
 import client.movements.Movement;
+import client.movements.MovementUtils;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
@@ -104,6 +105,7 @@ public class Piece extends JLabel {
      * @param to Arrival cell
      */
     public void move(Point to) {
+        MovementUtils.setBoard(Game.getBoard());
         // If it's not the client turn or the client tries to move a piece that isn't his, don't move
         if (CheckPlayerMove.isNotPlayerTurn() ||
             CheckPlayerMove.isNotPlayerPiece(this.getColor()) ||
@@ -139,6 +141,7 @@ public class Piece extends JLabel {
                 temporaryBoard[currentPosition.y][currentPosition.x] = null;
                 temporaryBoard[to.y][to.x] = this;
 
+                MovementUtils.setBoard(temporaryBoard);
                 if (Game.isKingInCheck(temporaryBoard, pieceColor)) {
                     continue;
                 }

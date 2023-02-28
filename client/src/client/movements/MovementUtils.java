@@ -7,13 +7,18 @@ import gameUtils.PieceType;
 import java.awt.Point;
 
 public class MovementUtils {
+    private static Piece[][] board = new Piece[Game.DIM_CHESSBOARD][Game.DIM_CHESSBOARD];
     public static boolean checkMove(Point from, Point to, Point move) {
         return
             to.x == from.x + move.x &&
             to.y == from.y + move.y;
     }
+
+    public static void setBoard(Piece[][] board) {
+        MovementUtils.board = board;
+    }
+
     public static boolean isPathFree(Point from, Point to, Point direction) {
-        Piece[][] board = Game.getBoard();
         Point ghostPiece = new Point(from.x, from.y);
 
         while (ghostPiece.x != to.x - direction.x || ghostPiece.y != to.y - direction.y) {
@@ -30,7 +35,6 @@ public class MovementUtils {
 
     public static boolean checkCastleRules(Point rookPosition) {
         final Point KING_POSITION = new Point(4, 7);
-        Piece[][] board = Game.getBoard();
 
         return
             board[KING_POSITION.y][KING_POSITION.x] != null &&

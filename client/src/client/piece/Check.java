@@ -70,12 +70,7 @@ public class Check {
                 continue;
             }
 
-            System.out.println("Path controller: " + pathController + " canMove: " + board[pathController.y][pathController.x].canMove(cell) + "\n\tpathController: " + board[pathController.y][pathController.x].getColor() + " " + board[pathController.y][pathController.x].getType() + " " + board[pathController.y][pathController.x].getCurrentPosition() + "\n\tcell: " + cell);
-
-            if (board[pathController.y][pathController.x].getColor() != pieceColor &&
-                board[pathController.y][pathController.x].canMove(cell)) {
-
-                System.out.println("Attacked by Bishop/Rook/Queen/King");
+            if (board[pathController.y][pathController.x].canMove(cell)) {
                 return true;
             }
         }

@@ -24,7 +24,7 @@ import java.util.Objects;
 public class Game {
     public static final int DIM_CHESSBOARD = 8;
     private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 570;
-    private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2);
+    private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2); // CELL_SIZE / 4
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
 
     // The board where all the pieces will be stored
@@ -118,12 +118,8 @@ public class Game {
                 if (board[y][x] != null &&
                     board[y][x].getType() == PieceType.KING &&
                     board[y][x].getColor() == kingColor) {
-//                    System.out.println("Checking " + kingColor + " king at x: " + x + " y: " + y);
 
-                    boolean isCellAttacked = Check.isCellAttacked(new Point(x, y), kingColor, board);
-//                    System.out.println("Cell is" + (!isCellAttacked ? " not " : " ") + "attacked");
-
-                    return isCellAttacked;
+                    return Check.isCellAttacked(new Point(x, y), kingColor, board);
                 }
             }
         }
@@ -216,9 +212,10 @@ public class Game {
         JButton playButton = new JButton("Play");
         playButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 38));
         playButton.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
+        playButton.setBorderPainted(false);
 
-        playButton.setBackground(Color.decode("#DF3E28"));
-        playButton.setForeground(Color.decode("#FFFFFF"));
+        playButton.setBackground(new Color(0xDF3E28));
+        playButton.setForeground(new Color(0xFFFFFF));
 
         playButton.setBounds(
                 WINDOW_WIDTH / 2 - DIM_BUTTON_X / 2,
@@ -232,16 +229,24 @@ public class Game {
             System.exit(-1);
         }
 
-        Image icon = new ImageIcon(path).getImage();
         JLabel loadingGif = new JLabel();
-        loadingGif.setIcon(new ImageIcon(icon.getScaledInstance(Game.CELL_SIZE, Game.CELL_SIZE, Image.SCALE_SMOOTH)));
+        Image gif = new ImageIcon(path).getImage();
+        loadingGif.setIcon(new ImageIcon(gif.getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
+        loadingGif.setLocation(MARGIN + (DIM_CHESSBOARD / 2) * CELL_SIZE, MARGIN + (DIM_CHESSBOARD / 2) * CELL_SIZE);
 
         playButton.addActionListener(e -> {
-            chessboardPanel.add(loadingGif);
+            window.remove(playButton);
+            window.setSize(WINDOW_WIDTH + 19, WINDOW_HEIGHT - MARGIN - DIM_BUTTON_Y + 39);
+
+            window.getContentPane().add(loadingGif);
+            window.setComponentZOrder(loadingGif, 0);
+            window.repaint();
+
             new Thread(Client::createMatch).start();
         });
 
         window.add(playButton);
+        window.repaint();
     }
 
     /**
