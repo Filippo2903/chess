@@ -39,9 +39,9 @@ public class MovementUtils {
         return
             board[KING_POSITION.y][KING_POSITION.x] != null &&
             board[KING_POSITION.y][KING_POSITION.x].getType() == PieceType.KING &&
-            board[KING_POSITION.y][KING_POSITION.x].hasMoved() == false &&
+                    !board[KING_POSITION.y][KING_POSITION.x].hasMoved() &&
             board[rookPosition.y][rookPosition.x] != null &&
             board[rookPosition.y][rookPosition.x].getType() == PieceType.ROOK &&
-            board[rookPosition.y][rookPosition.x].hasMoved() == false;
+                    !board[rookPosition.y][rookPosition.x].hasMoved();
     }
 }

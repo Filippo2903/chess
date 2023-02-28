@@ -110,8 +110,6 @@ public class Game {
      * @return <code>true</code> if the king is in check, otherwise <code>false</code>
      */
     public static boolean isKingInCheck(Piece[][] board, PlayerColor kingColor) {
-//        System.out.println("===");
-//        Game.printBoard(board);
 
         for (int x = 0; x < Game.DIM_CHESSBOARD; x++) {
             for (int y = 0; y < Game.DIM_CHESSBOARD; y++) {
@@ -211,6 +209,7 @@ public class Game {
 
         JButton playButton = new JButton("Play");
         playButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 38));
+
         playButton.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
         playButton.setBorderPainted(false);
 
@@ -223,7 +222,7 @@ public class Game {
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
 
-        URL path = ClassLoader.getSystemResource("loading.gif");
+        URL path = ClassLoader.getSystemResource("icon.png");
         if (path == null) {
             ErrorPopup.show(7);
             System.exit(-1);
@@ -402,7 +401,6 @@ public class Game {
         initHighlightedCells();
     }
 
-
     /**
      * Displays the window and paints the board
      */
@@ -410,7 +408,6 @@ public class Game {
         displayWindow();
         drawBoard();
     }
-
 
     /**
      * Start the game

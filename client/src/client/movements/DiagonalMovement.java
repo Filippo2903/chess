@@ -1,5 +1,7 @@
 package client.movements;
 
+import client.Game;
+
 import java.awt.*;
 
 public class DiagonalMovement implements Movement {
