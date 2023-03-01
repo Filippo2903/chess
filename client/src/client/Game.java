@@ -14,7 +14,6 @@ import modal.ErrorPopup;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
@@ -24,18 +23,22 @@ import java.util.Objects;
  */
 public class Game {
     public static final int DIM_CHESSBOARD = 8;
-    // The board where all the pieces will be stored
-    public static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
     private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 570;
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2); // CELL_SIZE / 4
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
-    private static final JLabel fromCell = new JLabel(),
-            toCell = new JLabel();
-    public static JPanel chessboardPanel;
-    private static PlayerColor clientColor = PlayerColor.WHITE;
-    private static PlayerColor playerTurn;
-    private static Point[] enemyMove = new Point[2];
-    private static JFrame window = new JFrame();
+
+    private JLabel loadingGif = new JLabel();
+    private final JLabel fromCell = new JLabel();
+    private final JLabel toCell = new JLabel();
+
+    // The board where all the pieces will be stored
+    private final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
+
+    private PlayerColor clientColor = PlayerColor.WHITE;
+    private PlayerColor playerTurn;
+    private Point[] enemyMove = new Point[2];
+    private JFrame window = new JFrame();
+    public JPanel chessboardPanel;
 
     /**
      * DEBUG
@@ -50,6 +53,8 @@ public class Game {
         System.out.println();
     }
 
+
+
     /**
      * Get the player color
      * @return The player color
@@ -62,7 +67,7 @@ public class Game {
      * Get the player who has to move
      * @return The player
      */
-    public static PlayerColor getPlayerTurn() {
+    public PlayerColor getPlayerTurn() {
         return playerTurn;
     }
 
@@ -70,14 +75,14 @@ public class Game {
      * Get the board where all the pieces are stored
      * @return The board
      */
-    public static Piece[][] getBoard() {
+    public Piece[][] getBoard() {
         return board;
     }
 
     /**
      * Change the client's player turn
      */
-    public static void changePlayerTurn() {
+    public void changePlayerTurn() {
         playerTurn = playerTurn == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
 
@@ -86,7 +91,7 @@ public class Game {
      * @param cell  Cell to edit
      * @param value Value to assign to the cell
      */
-    public static void editBoardCell(Point cell, Piece value) {
+    public void editBoardCell(Point cell, Piece value) {
         board[cell.y][cell.x] = value;
     }
 
@@ -94,7 +99,7 @@ public class Game {
      * Set the FromCell position
      * @param cell The position to set the FromCell
      */
-    public static void setPositionFromCell(Point cell) {
+    public void setPositionFromCell(Point cell) {
         fromCell.setVisible(true);
         fromCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
@@ -103,9 +108,22 @@ public class Game {
      * Set the ToCell position
      * @param cell The position to set the ToCell
      */
-    public static void setPositionToCell(Point cell) {
+    public void setPositionToCell(Point cell) {
         toCell.setVisible(true);
         toCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
+    }
+
+    private void highlightCheckmate(Point attackerCell, Point attackedCell) {
+        final Color HIGHLIGHTED_ATTACKER = new Color(0xED4337);
+        final Color HIGHLIGHTED_ATTACKED = new Color(0xED4337);
+
+        fromCell.setVisible(true);
+        fromCell.setLocation(attackerCell.x * CELL_SIZE, attackerCell.y * CELL_SIZE);
+        fromCell.setBackground(HIGHLIGHTED_ATTACKER);
+
+        toCell.setVisible(true);
+        toCell.setLocation(attackedCell.x * CELL_SIZE, attackedCell.y * CELL_SIZE);
+        toCell.setBackground(HIGHLIGHTED_ATTACKED);
     }
 
     /**
@@ -143,7 +161,7 @@ public class Game {
      * @param promoteType The type the piece has to promote
      * @param promotingCell The cell where the piece will be after promotion
      */
-    public static void promote(Piece piece, PieceMoves promoteType, Point promotingCell) {
+    public void promote(Piece piece, PieceMoves promoteType, Point promotingCell) {
         // Kill the old piece
         piece.kill();
 
@@ -170,7 +188,7 @@ public class Game {
      * Get the latest enemy move
      * @return A pair of coordinates, (From, To)
      */
-    public static Point[] getEnemyMove() {
+    public Point[] getEnemyMove() {
         return enemyMove;
     }
 
@@ -203,11 +221,7 @@ public class Game {
             promote(enemyPiece, PieceMoves.valueOf(packet.newType.toString()), packet.to);
         }
 
-        // Update the from and to cell highlights
-        setPositionFromCell(packet.from);
-        setPositionToCell(packet.to);
-
-        Game.chessboardPanel.repaint();
+        chessboardPanel.repaint();
 
         // Change the player turn
         changePlayerTurn();
@@ -346,8 +360,8 @@ public class Game {
      * Draw the chessboard in the UI
      */
     private void initChessboard() {
-        final Color BLACK_CELL = new Color(0xFFEFD5),
-                WHITE_CELL = new Color(0x654321);
+        final Color BLACK_CELL = new Color(0xFFEFD5);
+        final Color WHITE_CELL = new Color(0x654321);
 
         // Create and paint the background of the panel that will contain the chessboard
         chessboardPanel = new JPanel() {
@@ -452,7 +466,7 @@ public class Game {
      * Start the game
      */
     public void startGame(PlayerColor clientColor) {
-        Game.clientColor = clientColor;
+        this.clientColor = clientColor;
         playerTurn = PlayerColor.WHITE;
 
         loadingGif.setVisible(false);

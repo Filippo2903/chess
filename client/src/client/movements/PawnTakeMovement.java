@@ -12,7 +12,6 @@ public class PawnTakeMovement implements Movement {
             new Point(1, -1)
     };
 
-    @Override
     public boolean canMove(Point from, Point to) {
         Piece[][] board = Client.getGame().getBoard();
 

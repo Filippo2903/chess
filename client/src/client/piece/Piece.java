@@ -5,7 +5,6 @@ import client.Game;
 import client.audio.AudioPlayer;
 import client.audio.AudioType;
 import client.movements.Movement;
-import client.movements.MovementUtils;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
@@ -127,13 +126,13 @@ public class Piece extends JLabel {
                     continue;
                 }
 
-                if (Game.isKingInCheck(Game.board, pieceColor) &&
+                if (Check.isCellAttacked(Client.getGame().findKing(Client.getGame().getBoard(), pieceColor), pieceColor, Client.getGame().getBoard()) &&
                     (movement.getSpecialMove() == SpecialMoveType.KINGSIDE_CASTLE ||
                      movement.getSpecialMove() == SpecialMoveType.QUEENSIDE_CASTLE)) {
                     continue;
                 }
 
-                Piece[][] temporaryBoard = Arrays.stream(Game.getBoard())
+                Piece[][] temporaryBoard = Arrays.stream(Client.getGame().getBoard())
                         .map(row -> Arrays.copyOf(row, row.length))
                         .toArray(Piece[][]::new);
 
@@ -155,7 +154,7 @@ public class Piece extends JLabel {
 
                 // Check if the piece is a pawn, and it's going to promote
                 if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
-                    PieceMoves promoteType = Game.inputPromotionType();
+                    PieceMoves promoteType = Client.getGame().promptPromotionType();
 
                     // Add the from and to cells highlights
                     Client.getGame().setPositionFromCell(currentPosition);
@@ -183,7 +182,7 @@ public class Piece extends JLabel {
                 // Start listening for the enemy move
                 new Thread(Client::receiveMove).start();
 
-                Game.chessboardPanel.repaint();
+                Client.getGame().chessboardPanel.repaint();
 
                 return;
             }
@@ -208,7 +207,7 @@ public class Piece extends JLabel {
         this.setLocation(newPosition.x * Game.CELL_SIZE, newPosition.y * Game.CELL_SIZE);
 
         // Set the new position on the data board
-        Game.editBoardCell(newPosition, this);
+        Client.getGame().editBoardCell(newPosition, this);
 
         // Set the new position at the piece
         currentPosition = newPosition;
@@ -218,10 +217,10 @@ public class Piece extends JLabel {
      * Kill the piece
      */
     public void kill() {
-        Game.editBoardCell(currentPosition, null);
+        Client.getGame().editBoardCell(currentPosition, null);
 
-        Game.chessboardPanel.remove(this);
-        Game.chessboardPanel.repaint();
+        Client.getGame().chessboardPanel.remove(this);
+        Client.getGame().chessboardPanel.repaint();
     }
 
     /**

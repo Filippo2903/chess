@@ -22,6 +22,10 @@ public class Client {
 
     private static Game game;
 
+    public static Game getGame() {
+        return game;
+    }
+
     public static void sendMove(Packet packet) {
         try {
             os.println(packet.serializeToString());
@@ -119,7 +123,7 @@ public class Client {
 
         System.out.println("Client has color " + color);
 
-        Game.chessboardPanel.repaint();
+        game.chessboardPanel.repaint();
 
         AudioPlayer.play(AudioType.GAME_START);
 

@@ -14,6 +14,9 @@ import javax.swing.JOptionPane;
  *
  * IO
  * 300-399
+ *
+ * Runtime
+ * 400 - 499
  */
 
 public class ErrorPopup {
