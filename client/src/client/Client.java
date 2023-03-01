@@ -18,7 +18,7 @@ import java.net.Socket;
 public class Client {
     private static PrintWriter os = null;
     private static BufferedReader is = null;
-    private static Socket socket = null;
+    static Socket socket = null;
 
     private static Game game;
 
@@ -82,11 +82,7 @@ public class Client {
 //        } while(!valid);
 
         game = new Game();
-        try {
-            SwingUtilities.invokeAndWait(()->game.startWindow());
-        } catch (InterruptedException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+        game.startWindow();
 
     }
 

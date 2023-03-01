@@ -15,6 +15,7 @@ import javax.swing.*;
 
 import java.awt.Point;
 import java.awt.Image;
+import java.awt.datatransfer.ClipboardOwner;
 import java.net.URL;
 import java.util.Arrays;
 
@@ -176,6 +177,15 @@ public class Piece extends JLabel {
                 }
 
                 hasMoved = true;
+
+                Point oppositeKingPosition = Client.getGame().findKing(Client.getGame().getBoard(), Client.getGame().getOpponentColor());
+                if (Check.isCheckMate(oppositeKingPosition, Client.getGame().getOpponentColor())) {
+
+                    Client.getGame().highlightCheckmate(currentPosition, oppositeKingPosition);
+                    System.out.println("Hai vinto");
+                    Client.getGame().endGame();
+                    return;
+                }
 
                 Client.getGame().changePlayerTurn();
 

@@ -132,7 +132,7 @@ public class Game {
      * @param kingColor The king color
      * @return The king's position
      */
-    public static Point findKing(Piece[][] board, PlayerColor kingColor) {
+    public Point findKing(Piece[][] board, PlayerColor kingColor) {
         for (int x = 0; x < Game.DIM_CHESSBOARD; x++) {
             for (int y = 0; y < Game.DIM_CHESSBOARD; y++) {
                 if (board[y][x] != null &&
@@ -235,28 +235,36 @@ public class Game {
 
         Point attackerCell = Check.whoIsAttackingCell(kingPosition, clientColor, board);
 
-        boolean checkmate = false;
+        // Update the from and to cell highlights
+        setPositionFromCell(packet.from);
+        setPositionToCell(packet.to);
+
         if (attackerCell != null) {
             if (Check.isCheckMate(kingPosition, clientColor)) {
                 highlightCheckmate(attackerCell, kingPosition);
-                System.out.println("AI PERSO COGLIONE");
-                checkmate = true;
+                System.out.println("Hai perso");
+                endGame();
             }
         }
+    }
 
-        if (!checkmate) {
-            // Update the from and to cell highlights
-            setPositionFromCell(packet.from);
-            setPositionToCell(packet.to);
+    public void endGame() {
+        window.setSize(WINDOW_WIDTH + 19, WINDOW_HEIGHT + 39);
+        try {
+            Client.socket.close();
+        } catch (IOException e) {
+            ErrorPopup.show(206);
         }
+        playerTurn = PlayerColor.BLACK;
+        clientColor = PlayerColor.WHITE;
+
+        displayLobby();
     }
 
     /**
      * Display the play button
      */
     private void initPlayButton() {
-        final int DIM_BUTTON_X = WINDOW_WIDTH / 2, DIM_BUTTON_Y = WINDOW_HEIGHT - (CELL_SIZE * DIM_CHESSBOARD + MARGIN * 3);
-
         JButton playButton = new JButton("Play");
         playButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 38));
 
@@ -301,7 +309,6 @@ public class Game {
      * Display the main window
      */
     private void displayWindow() {
-
         window = new JFrame();
         window.setTitle("Chess");
 
@@ -330,10 +337,6 @@ public class Game {
         window.setLayout(null);
         window.setResizable(false);
         window.setVisible(true);
-
-
-        initPlayButton();
-
     }
 
     /**
@@ -459,6 +462,11 @@ public class Game {
      */
     public void startWindow() {
         displayWindow();
+        displayLobby();
+    }
+
+    public void displayLobby() {
+        initPlayButton();
         drawBoard();
     }
 

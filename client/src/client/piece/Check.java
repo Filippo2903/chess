@@ -117,8 +117,7 @@ public class Check {
 
         Point kingAttacker = whoIsAttackingCell(kingPosition, pieceColor, board);
         if (kingAttacker == null) {
-            ErrorPopup.show(401);
-            System.exit(1);
+            return false;
         }
 
         Point direction = new Point(
