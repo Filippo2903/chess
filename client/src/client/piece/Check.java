@@ -9,7 +9,6 @@ import client.Game;
 import modal.ErrorPopup;
 
 import java.awt.Point;
-import java.util.Objects;
 
 public class Check {
     private static boolean isInsideBoard(Point cell) {
@@ -18,7 +17,7 @@ public class Check {
             cell.x  < Game.DIM_CHESSBOARD && cell.x >= 0;
     }
 
-    public static Point whoIsAttackingCell(Point cell, PlayerColor pieceColor, Piece[][] board) {
+    public static Point getAttackerCell(Point cell, PlayerColor pieceColor, Piece[][] board) {
 
         final Point[] pawnTakeMoves = {
                 new Point(-1, -1),
@@ -83,7 +82,7 @@ public class Check {
     }
 
     public static boolean isCellAttacked(Point cell, PlayerColor pieceColor, Piece[][] board) {
-        return whoIsAttackingCell(cell, pieceColor, board) != null;
+        return getAttackerCell(cell, pieceColor, board) != null;
     }
 
     public static boolean isCheckMate(Point kingPosition, PlayerColor pieceColor) {
@@ -115,7 +114,7 @@ public class Check {
             }
         }
 
-        Point kingAttacker = whoIsAttackingCell(kingPosition, pieceColor, board);
+        Point kingAttacker = getAttackerCell(kingPosition, pieceColor, board);
         if (kingAttacker == null) {
             return false;
         }

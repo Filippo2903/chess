@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 public class Client {
     private static PrintWriter os = null;
@@ -65,20 +66,20 @@ public class Client {
 
         System.out.println("Starting client...");
 
-//        String stringAddress;
-//
-//        InetAddress address = null;
+        String stringAddress = "127.0.0.1";
+
+        InetAddress address = null;
 //        boolean valid;
 //
 //        do {
 //            stringAddress = JOptionPane.showInputDialog("Inserisci l'indirizzo del server", "127.0.0.1");
-//            try {
-//                address = InetAddress.getByName(stringAddress);
+            try {
+                address = InetAddress.getByName(stringAddress);
 //                valid = true;
-//            } catch (UnknownHostException e) {
+            } catch (UnknownHostException e) {
 //                valid = false;
-//                ErrorPopup.show("Indirizzo non valido!");
-//            }
+                ErrorPopup.show("Indirizzo non valido!");
+            }
 //        } while(!valid);
 
         game = new Game();

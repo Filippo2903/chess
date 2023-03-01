@@ -14,6 +14,8 @@ import modal.ErrorPopup;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
@@ -27,9 +29,12 @@ public class Game {
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2); // CELL_SIZE / 4
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
 
-    private JLabel loadingGif = new JLabel();
-    private final JLabel fromCell = new JLabel();
-    private final JLabel toCell = new JLabel();
+    public static final int DIM_BUTTON_X = WINDOW_WIDTH / 2;
+    public static final int DIM_BUTTON_Y = WINDOW_HEIGHT - (CELL_SIZE * DIM_CHESSBOARD + MARGIN * 3);
+
+    private JLabel loadingGif;
+    private final JLabel fromCell;
+    private final JLabel toCell;
 
     // The board where all the pieces will be stored
     private final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
@@ -37,8 +42,14 @@ public class Game {
     private PlayerColor clientColor = PlayerColor.WHITE;
     private PlayerColor playerTurn;
     private Point[] enemyMove = new Point[2];
-    private JFrame window = new JFrame();
+    private JFrame window;
     public JPanel chessboardPanel;
+
+    public Game() {
+        window = new JFrame();
+        fromCell = new JLabel();
+        toCell = new JLabel();
+    }
 
     /**
      * DEBUG
@@ -52,8 +63,6 @@ public class Game {
         }
         System.out.println();
     }
-
-
 
     /**
      * Get the player color
@@ -113,7 +122,12 @@ public class Game {
         toCell.setLocation(cell.x * CELL_SIZE, cell.y * CELL_SIZE);
     }
 
-    private void highlightCheckmate(Point attackerCell, Point attackedCell) {
+    /**
+     * Highlight both the attacker piece and the attacked piece cell to denote checkmate
+     * @param attackerCell The cell where the attacker piece is
+     * @param attackedCell The cell where the attacked piece is
+     */
+    public void highlightCheckmate(Point attackerCell, Point attackedCell) {
         final Color HIGHLIGHTED_ATTACKER = new Color(0xED4337);
         final Color HIGHLIGHTED_ATTACKED = new Color(0xED4337);
 
@@ -180,6 +194,10 @@ public class Game {
         chessboardPanel.setComponentZOrder(promotedPiece, 0);
     }
 
+    /**
+     * Get the opponent player's color
+     * @return The opponent color
+     */
     public PlayerColor getOpponentColor() {
         return clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
     }
@@ -233,7 +251,7 @@ public class Game {
             System.exit(-1);
         }
 
-        Point attackerCell = Check.whoIsAttackingCell(kingPosition, clientColor, board);
+        Point attackerCell = Check.getAttackerCell(kingPosition, clientColor, board);
 
         // Update the from and to cell highlights
         setPositionFromCell(packet.from);
@@ -280,18 +298,19 @@ public class Game {
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
 
-        URL path = ClassLoader.getSystemResource("loading.gif");
-        if (path == null) {
-            ErrorPopup.show(7);
-            System.exit(-1);
-        }
+        SwingUtilities.invokeLater(()->{
+            URL path = ClassLoader.getSystemResource("loading.gif");
+            if (path == null) {
+                ErrorPopup.show(7);
+                System.exit(-1);
+            }
 
-        Image gif = new ImageIcon(path).getImage();
-        loadingGif = new JLabel(new ImageIcon(gif.getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
-        loadingGif.setVisible(false);
-        window.getContentPane().add(loadingGif);
-        window.setComponentZOrder(loadingGif, 0);
-        window.repaint();
+            Image gif = new ImageIcon(path).getImage();
+            loadingGif = new JLabel(new ImageIcon(gif.getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
+            loadingGif.setVisible(false);
+            window.getContentPane().add(loadingGif);
+            window.setComponentZOrder(loadingGif, 0);
+        });
 
         playButton.addActionListener(e -> {
             window.remove(playButton);

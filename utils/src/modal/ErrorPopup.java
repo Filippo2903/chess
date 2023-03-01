@@ -45,8 +45,6 @@ public class ErrorPopup {
      * @param errorCode The error code
      */
     public static void show(int errorCode) {
-        if (errorCode > 0 && errorCode < 99) {
-            show(String.format(title + " %d", errorCode), String.format(message, errorCode));
-        }
+        show(String.format(title + " %d", errorCode), String.format(message, errorCode));
     }
 }
