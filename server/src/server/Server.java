@@ -12,8 +12,6 @@ import java.util.Objects;
 public class Server {
     public static ServerSocket serverSocket;
 
-    private static void a() {System.out.println("*** FILIPPO RIAVVIA IL SERVER ***");}
-
     private static Packet turnBoard(Packet packet) {
         packet.from.y = 7 - packet.from.y;
         packet.to.y = 7 - packet.to.y;
@@ -46,7 +44,7 @@ public class Server {
         return true;
     }
 
-    public static void startMatchmaking() {                                                                                                                                                                                                 a();
+    public static void startMatchmaking() {
         PlayerColor colorPlayerOne, colorPlayerTwo;
         if ((int) (Math.random() * 2) == 0) {
             colorPlayerOne = PlayerColor.WHITE;

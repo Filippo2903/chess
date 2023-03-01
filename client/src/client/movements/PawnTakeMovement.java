@@ -1,5 +1,6 @@
 package client.movements;
 
+import client.Client;
 import client.Game;
 import client.piece.Piece;
 
@@ -13,7 +14,7 @@ public class PawnTakeMovement implements Movement {
 
     @Override
     public boolean canMove(Point from, Point to) {
-        Piece[][] board = Game.getBoard();
+        Piece[][] board = Client.getGame().getBoard();
 
         for (Point move : moves) {
             if (MovementUtils.checkMove(from, to, move) &&

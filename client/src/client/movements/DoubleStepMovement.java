@@ -1,5 +1,6 @@
 package client.movements;
 
+import client.Client;
 import client.Game;
 import client.piece.Piece;
 
@@ -10,7 +11,7 @@ public class DoubleStepMovement implements Movement {
 
     private boolean checkRules(Point from, Point to) {
         final int START_ROW = 6;
-        Piece[][] board = Game.getBoard();
+        Piece[][] board = Client.getGame().getBoard();
 
         return
             from.y == START_ROW &&

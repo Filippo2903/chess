@@ -90,9 +90,9 @@ public class Piece extends JLabel {
      * @param to The cell where the piece wants to move
      * @return <code>true</code> if the piece can move, <code>false</code> if it can't move
      */
-    public boolean canMove(Point to) {
+    public boolean canMove(Point to, Piece[][] board) {
         for (Movement movement : pieceMoves.movements) {
-            if (movement.canMove(currentPosition, to)) {
+            if (movement.canMove(currentPosition, to, board)) {
                 return true;
             }
         }
@@ -105,7 +105,6 @@ public class Piece extends JLabel {
      * @param to Arrival cell
      */
     public void move(Point to) {
-        MovementUtils.setBoard(Game.getBoard());
         // If it's not the client turn or the client tries to move a piece that isn't his, don't move
         if (CheckPlayerMove.isNotPlayerTurn() ||
             CheckPlayerMove.isNotPlayerPiece(this.getColor()) ||
@@ -123,8 +122,8 @@ public class Piece extends JLabel {
 
         // Check if the piece can move to the desired cell
         for (Movement movement : pieceMoves.movements) {
-            if (movement.canMove(currentPosition, to)) {
-                if (this.getType() == PieceType.KING && Check.isCellAttacked(to, pieceColor, Game.getBoard())) {
+            if (movement.canMove(currentPosition, to, Client.getGame().getBoard())) {
+                if (this.getType() == PieceType.KING && Check.isCellAttacked(to, pieceColor, Client.getGame().getBoard())) {
                     continue;
                 }
 
@@ -141,16 +140,15 @@ public class Piece extends JLabel {
                 temporaryBoard[currentPosition.y][currentPosition.x] = null;
                 temporaryBoard[to.y][to.x] = this;
 
-                MovementUtils.setBoard(temporaryBoard);
-                if (Game.isKingInCheck(temporaryBoard, pieceColor)) {
+                if (Check.isCellAttacked(Client.getGame().findKing(temporaryBoard, pieceColor), pieceColor, temporaryBoard)) {
                     continue;
                 }
 
                 SpecialMovesMap.specialMovesMap.get(movement.getSpecialMove()).move(currentPosition, to);
 
-                if (Game.board[to.y][to.x] != null) {
+                if (Client.getGame().getBoard()[to.y][to.x] != null) {
                     AudioPlayer.play(AudioType.TAKE);
-                    Game.board[to.y][to.x].kill();
+                    Client.getGame().getBoard()[to.y][to.x].kill();
                 } else if (movement.getSpecialMove() == null){
                     AudioPlayer.play(AudioType.MOVE);
                 }
@@ -160,10 +158,10 @@ public class Piece extends JLabel {
                     PieceMoves promoteType = Game.inputPromotionType();
 
                     // Add the from and to cells highlights
-                    Game.setPositionFromCell(currentPosition);
-                    Game.setPositionToCell(to);
+                    Client.getGame().setPositionFromCell(currentPosition);
+                    Client.getGame().setPositionToCell(to);
 
-                    Game.promote(this, promoteType, to);
+                    Client.getGame().promote(this, promoteType, to);
 
                     // Send the server the move specifying a change in the piece's type
                     Client.sendMove(new Packet(currentPosition, to, PieceType.valueOf(promoteType.toString())));
@@ -171,8 +169,8 @@ public class Piece extends JLabel {
                     Client.sendMove(new Packet(currentPosition, to, movement.getSpecialMove()));
 
                     // Add the from and to cells highlights
-                    Game.setPositionFromCell(currentPosition);
-                    Game.setPositionToCell(to);
+                    Client.getGame().setPositionFromCell(currentPosition);
+                    Client.getGame().setPositionToCell(to);
 
                     // Change the position in the client
                     this.setPosition(to);
@@ -180,7 +178,7 @@ public class Piece extends JLabel {
 
                 hasMoved = true;
 
-                Game.changePlayerTurn();
+                Client.getGame().changePlayerTurn();
 
                 // Start listening for the enemy move
                 new Thread(Client::receiveMove).start();
@@ -203,7 +201,7 @@ public class Piece extends JLabel {
     public void setPosition(Point newPosition) {
         // If the piece is inside the board
         if (currentPosition.x != -1 && currentPosition.y != -1) {
-            Game.editBoardCell(currentPosition, null);
+            Client.getGame().editBoardCell(currentPosition, null);
         }
 
         // Set the new position to the JLabel

@@ -1,12 +1,15 @@
 package client.piece;
 
+import client.Client;
 import client.movements.LMovement;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 
 import client.Game;
+import modal.ErrorPopup;
 
 import java.awt.Point;
+import java.util.Objects;
 
 public class Check {
     private static boolean isInsideBoard(Point cell) {
@@ -15,27 +18,34 @@ public class Check {
             cell.x  < Game.DIM_CHESSBOARD && cell.x >= 0;
     }
 
-    public static boolean isCellAttacked(Point cell, PlayerColor pieceColor, Piece[][] board) {
+    public static Point whoIsAttackingCell(Point cell, PlayerColor pieceColor, Piece[][] board) {
 
-        final Point[] pawnTakeMoves = { new Point(-1, -1), new Point(1, -1) };
+        final Point[] pawnTakeMoves = {
+                new Point(-1, -1),
+                new Point(1, -1)
+        };
 
         for (Point pawnTakeMove : pawnTakeMoves) {
-            if (isInsideBoard(new Point(cell.y + pawnTakeMove.y, cell.x + pawnTakeMove.x)) &&
-                board[cell.y + pawnTakeMove.y][cell.x + pawnTakeMove.x] != null &&
-                board[cell.y + pawnTakeMove.y][cell.x + pawnTakeMove.x].getType() == PieceType.PAWN &&
-                board[cell.y + pawnTakeMove.y][cell.x + pawnTakeMove.x].getColor() != pieceColor) {
+            Point checkedCell = new Point(cell.x + pawnTakeMove.x, cell.y + pawnTakeMove.y);
 
-                return true;
+            if (isInsideBoard(checkedCell) &&
+                board[checkedCell.y][checkedCell.x] != null &&
+                board[checkedCell.y][checkedCell.x].getType() == PieceType.PAWN &&
+                board[checkedCell.y][checkedCell.x].getColor() != pieceColor) {
+
+                return checkedCell;
             }
         }
 
         for (Point move : LMovement.getMoves()) {
-            if (isInsideBoard(new Point(cell.y + move.y, cell.x + move.x)) &&
-                board[cell.y + move.y][cell.x + move.x] != null &&
-                board[cell.y + move.y][cell.x + move.x].getColor() != pieceColor &&
-                board[cell.y + move.y][cell.x + move.x].canMove(cell)) {
+            Point checkedCell = new Point(cell.x + move.x, cell.y + move.y);
 
-                return true;
+            if (isInsideBoard(checkedCell) &&
+                board[checkedCell.y][checkedCell.x] != null &&
+                board[checkedCell.y][checkedCell.x].getColor() != pieceColor &&
+                board[checkedCell.y][checkedCell.x].canMove(cell, board)) {
+
+                return checkedCell;
             }
         }
 
@@ -64,11 +74,72 @@ public class Check {
                 continue;
             }
 
-            if (board[pathController.y][pathController.x].canMove(cell)) {
-                return true;
+            if (board[pathController.y][pathController.x].canMove(cell, board)) {
+                return pathController;
             }
         }
 
-        return false;
+        return null;
+    }
+
+    public static boolean isCellAttacked(Point cell, PlayerColor pieceColor, Piece[][] board) {
+        return whoIsAttackingCell(cell, pieceColor, board) != null;
+    }
+
+    public static boolean isCheckMate(Point kingPosition, PlayerColor pieceColor) {
+        Piece[][] board = Client.getGame().getBoard();
+
+        final Point[] kingMoves = {
+                new Point(-1, -1),
+                new Point(1, -1),
+                new Point(1, 1),
+                new Point(-1, 1),
+                new Point(0, -1),
+                new Point(1, 0),
+                new Point(0, 1),
+                new Point(-1, 0)
+        };
+
+        for (Point move : kingMoves) {
+            Point checkedCell = new Point(kingPosition.x + move.x, kingPosition.y + move.y);
+
+            if (isInsideBoard(checkedCell) &&
+                !isCellAttacked(checkedCell, pieceColor, board)) {
+
+                if (board[checkedCell.y][checkedCell.x] != null &&
+                    board[checkedCell.y][checkedCell.x].getColor() == pieceColor) {
+                    continue;
+                }
+
+                return false;
+            }
+        }
+
+        Point kingAttacker = whoIsAttackingCell(kingPosition, pieceColor, board);
+        if (kingAttacker == null) {
+            ErrorPopup.show(401);
+            System.exit(1);
+        }
+
+        Point direction = new Point(
+                Integer.compare(kingPosition.x, kingAttacker.x),
+                Integer.compare(kingPosition.y, kingAttacker.y)
+        );
+
+        Point pathController = new Point(kingPosition.x + direction.x, kingPosition.y + direction.y);
+
+        while (isInsideBoard(pathController) &&
+                board[pathController.y][pathController.x] == null) {
+
+            if (isCellAttacked(pathController, Client.getGame().getOpponentColor(), board)) {
+
+                return false;
+            }
+
+            pathController.x += direction.x;
+            pathController.y += direction.y;
+        }
+
+        return true;
     }
 }

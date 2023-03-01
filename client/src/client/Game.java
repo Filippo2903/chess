@@ -39,7 +39,7 @@ public class Game {
 
     /**
      * DEBUG
-     **/
+     */
     public static void printBoard(Piece[][] _board) {
         for (Piece[] line : _board) {
             for (Piece piece : line) {
@@ -51,16 +51,15 @@ public class Game {
     }
 
     /**
-     * DEBUG
-     **/
-
-    public static PlayerColor getPlayerColor() {
+     * Get the player color
+     * @return The player color
+     */
+    public PlayerColor getPlayerColor() {
         return clientColor;
     }
 
     /**
      * Get the player who has to move
-     *
      * @return The player
      */
     public static PlayerColor getPlayerTurn() {
@@ -69,7 +68,6 @@ public class Game {
 
     /**
      * Get the board where all the pieces are stored
-     *
      * @return The board
      */
     public static Piece[][] getBoard() {
@@ -85,7 +83,6 @@ public class Game {
 
     /**
      * Edit a cell of the data board
-     *
      * @param cell  Cell to edit
      * @param value Value to assign to the cell
      */
@@ -95,7 +92,6 @@ public class Game {
 
     /**
      * Set the FromCell position
-     *
      * @param cell The position to set the FromCell
      */
     public static void setPositionFromCell(Point cell) {
@@ -105,7 +101,6 @@ public class Game {
 
     /**
      * Set the ToCell position
-     *
      * @param cell The position to set the ToCell
      */
     public static void setPositionToCell(Point cell) {
@@ -114,37 +109,38 @@ public class Game {
     }
 
     /**
-     * Returns if the king is in check in the given board
-     *
-     * @param board     The board to check
-     * @param kingColor The king's color to look for
-     * @return <code>true</code> if the king is in check, otherwise <code>false</code>
+     * Find the king in the board
+     * @param board The board where to look for the king
+     * @param kingColor The king color
+     * @return The king's position
      */
-    public static boolean isKingInCheck(Piece[][] board, PlayerColor kingColor) {
-
+    public static Point findKing(Piece[][] board, PlayerColor kingColor) {
         for (int x = 0; x < Game.DIM_CHESSBOARD; x++) {
             for (int y = 0; y < Game.DIM_CHESSBOARD; y++) {
                 if (board[y][x] != null &&
-                        board[y][x].getType() == PieceType.KING &&
-                        board[y][x].getColor() == kingColor) {
+                    board[y][x].getType() == PieceType.KING &&
+                    board[y][x].getColor() == kingColor) {
 
-                    return Check.isCellAttacked(new Point(x, y), kingColor, board);
+                    return new Point(x, y);
                 }
             }
         }
 
-        return false;
+        return null;
     }
 
-    public static PieceMoves inputPromotionType() {
+    /**
+     * Get the type of the promotion
+     * @return the type decided from the player
+     */
+    public PieceMoves promptPromotionType() {
         return PieceMoves.QUEEN;
     }
 
     /**
      * Promote a given piece
-     *
-     * @param piece         The piece that has to promote
-     * @param promoteType   The type the piece has to promote
+     * @param piece The piece that has to promote
+     * @param promoteType The type the piece has to promote
      * @param promotingCell The cell where the piece will be after promotion
      */
     public static void promote(Piece piece, PieceMoves promoteType, Point promotingCell) {
@@ -166,9 +162,12 @@ public class Game {
         chessboardPanel.setComponentZOrder(promotedPiece, 0);
     }
 
+    public PlayerColor getOpponentColor() {
+        return clientColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+    }
+
     /**
      * Get the latest enemy move
-     *
      * @return A pair of coordinates, (From, To)
      */
     public static Point[] getEnemyMove() {
@@ -177,7 +176,6 @@ public class Game {
 
     /**
      * Move the enemy piece
-     *
      * @param packet Packet to get data from
      */
     public void moveEnemy(Packet packet) {
@@ -213,6 +211,30 @@ public class Game {
 
         // Change the player turn
         changePlayerTurn();
+
+        Point kingPosition = findKing(board, clientColor);
+
+        if (kingPosition == null) {
+            ErrorPopup.show(400);
+            System.exit(-1);
+        }
+
+        Point attackerCell = Check.whoIsAttackingCell(kingPosition, clientColor, board);
+
+        boolean checkmate = false;
+        if (attackerCell != null) {
+            if (Check.isCheckMate(kingPosition, clientColor)) {
+                highlightCheckmate(attackerCell, kingPosition);
+                System.out.println("AI PERSO COGLIONE");
+                checkmate = true;
+            }
+        }
+
+        if (!checkmate) {
+            // Update the from and to cell highlights
+            setPositionFromCell(packet.from);
+            setPositionToCell(packet.to);
+        }
     }
 
     /**
@@ -236,7 +258,6 @@ public class Game {
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
 
-
         URL path = ClassLoader.getSystemResource("loading.gif");
         if (path == null) {
             ErrorPopup.show(7);
@@ -244,8 +265,7 @@ public class Game {
         }
 
         Image gif = new ImageIcon(path).getImage();
-        JLabel loadingGif = new JLabel(new ImageIcon(gif.getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
-        loadingGif.setLocation(MARGIN + (DIM_CHESSBOARD / 2) * CELL_SIZE, MARGIN + (DIM_CHESSBOARD / 2) * CELL_SIZE);
+        loadingGif = new JLabel(new ImageIcon(gif.getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
         loadingGif.setVisible(false);
         window.getContentPane().add(loadingGif);
         window.setComponentZOrder(loadingGif, 0);
@@ -435,6 +455,7 @@ public class Game {
         Game.clientColor = clientColor;
         playerTurn = PlayerColor.WHITE;
 
+        loadingGif.setVisible(false);
         drawBoard();
     }
 }

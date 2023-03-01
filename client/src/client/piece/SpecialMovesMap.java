@@ -1,5 +1,6 @@
 package client.piece;
 
+import client.Client;
 import client.Game;
 import client.audio.AudioPlayer;
 import client.audio.AudioType;
@@ -23,7 +24,7 @@ public class SpecialMovesMap {
         final Point ROOK_ARRIVAL_POSITION = new Point(castleSide == SpecialMoveType.KINGSIDE_CASTLE ? 5 : 3, cell.y);
 
         // Move the rook
-        Game.board[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
+        Client.getGame().getBoard()[ROOK_START_POSITION.y][ROOK_START_POSITION.x].animatedMove(ROOK_ARRIVAL_POSITION);
     }
 
     /**
@@ -43,7 +44,7 @@ public class SpecialMovesMap {
         put(SpecialMoveType.EN_PASSANT, (from, to) -> {
             AudioPlayer.play(AudioType.TAKE);
 
-            Game.board[from.y][to.x].kill();
+            Client.getGame().getBoard()[from.y][to.x].kill();
         });
     }};
 }

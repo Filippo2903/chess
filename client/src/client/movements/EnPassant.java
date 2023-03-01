@@ -1,5 +1,6 @@
 package client.movements;
 
+import client.Client;
 import client.Game;
 import client.piece.Piece;
 import gameUtils.PieceType;
@@ -17,8 +18,8 @@ public class EnPassant implements Movement {
         final int EN_PASSANT_ROW = 3;
         final int START_ROW = 1;
 
-        Piece[][] board = Game.getBoard();
-        Point[] enemyMove = Game.getEnemyMove();
+        Piece[][] board = Client.getGame().getBoard();
+        Point[] enemyMove = Client.getGame().getEnemyMove();
 
         final int FROM = 0;
         final int TO = 1;

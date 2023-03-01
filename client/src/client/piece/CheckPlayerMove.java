@@ -1,5 +1,6 @@
 package client.piece;
 
+import client.Client;
 import client.Game;
 import gameUtils.PlayerColor;
 
@@ -12,7 +13,7 @@ public class CheckPlayerMove {
      * @return true if the piece doesn't belong to him, otherwise true
      */
     public static boolean isNotPlayerPiece(PlayerColor color) {
-        return color != Game.getPlayerColor();
+        return color != Client.getGame().getPlayerColor();
     }
 
     /**
@@ -20,7 +21,7 @@ public class CheckPlayerMove {
      * @return true if it is not the player's turn, otherwise false
      */
     public static boolean isNotPlayerTurn() {
-        return Game.getPlayerTurn() != Game.getPlayerColor();
+        return Client.getGame().getPlayerTurn() != Client.getGame().getPlayerColor();
     }
 
     /**
@@ -30,7 +31,7 @@ public class CheckPlayerMove {
      * @return true if it is his piece, otherwise false
      */
     public static boolean isMovingOnHisOwnPiece(PlayerColor color, Point cell) {
-        Piece[][] board = Game.getBoard();
+        Piece[][] board = Client.getGame().getBoard();
         return board[cell.y][cell.x] != null && board[cell.y][cell.x].getColor() == color;
     }
 }

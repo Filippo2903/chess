@@ -87,7 +87,6 @@ public class Client {
     }
 
     public static void createMatch() {
-        // Try connecting to the server
         System.out.println("Connecting to the server...");
         while (true) {
             try {
@@ -97,16 +96,15 @@ public class Client {
 
                 break;
             } catch (Exception e) {
-                System.out.println("Connection failed, retrying in 3s...");
+                System.out.print("Connection failed, retrying in 3s...");
                 try {
-                    Thread.sleep(3000) ;
+                    Thread.sleep(3000);
                 } catch (InterruptedException err) {
                     throw new RuntimeException(e);
                 }
             }
         }
 
-        // Read and set the assigned color to the client
         String colorName = "";
         try {
             colorName = is.readLine();
