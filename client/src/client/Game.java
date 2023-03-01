@@ -1,11 +1,11 @@
 package client;
 
+import client.audio.AudioPlayer;
+import client.audio.AudioType;
 import client.piece.Check;
 import client.piece.Piece;
 import client.piece.PieceMoves;
 import client.piece.SpecialMovesMap;
-import client.audio.AudioPlayer;
-import client.audio.AudioType;
 import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PieceType;
@@ -14,6 +14,7 @@ import modal.ErrorPopup;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
@@ -23,31 +24,35 @@ import java.util.Objects;
  */
 public class Game {
     public static final int DIM_CHESSBOARD = 8;
+    // The board where all the pieces will be stored
+    public static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
     private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 570;
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2); // CELL_SIZE / 4
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
-
-    // The board where all the pieces will be stored
-    public static final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
     private static final JLabel fromCell = new JLabel(),
-                                toCell = new JLabel();
+            toCell = new JLabel();
     public static JPanel chessboardPanel;
     private static PlayerColor clientColor = PlayerColor.WHITE;
     private static PlayerColor playerTurn;
     private static Point[] enemyMove = new Point[2];
-    private static final JFrame window = new JFrame();
+    private static JFrame window = new JFrame();
 
-    /** DEBUG **/
+    /**
+     * DEBUG
+     **/
     public static void printBoard(Piece[][] _board) {
         for (Piece[] line : _board) {
-              for(Piece piece : line) {
-                      System.out.print(piece == null ? "   " : (piece.getColor().toString().charAt(0) + piece.getType().algebraicNotation) + " ");
-              }
-              System.out.println();
+            for (Piece piece : line) {
+                System.out.print(piece == null ? "   " : (piece.getColor().toString().charAt(0) + piece.getType().algebraicNotation) + " ");
+            }
+            System.out.println();
         }
         System.out.println();
     }
-    /** DEBUG **/
+
+    /**
+     * DEBUG
+     **/
 
     public static PlayerColor getPlayerColor() {
         return clientColor;
@@ -55,6 +60,7 @@ public class Game {
 
     /**
      * Get the player who has to move
+     *
      * @return The player
      */
     public static PlayerColor getPlayerTurn() {
@@ -63,6 +69,7 @@ public class Game {
 
     /**
      * Get the board where all the pieces are stored
+     *
      * @return The board
      */
     public static Piece[][] getBoard() {
@@ -78,6 +85,7 @@ public class Game {
 
     /**
      * Edit a cell of the data board
+     *
      * @param cell  Cell to edit
      * @param value Value to assign to the cell
      */
@@ -87,6 +95,7 @@ public class Game {
 
     /**
      * Set the FromCell position
+     *
      * @param cell The position to set the FromCell
      */
     public static void setPositionFromCell(Point cell) {
@@ -96,6 +105,7 @@ public class Game {
 
     /**
      * Set the ToCell position
+     *
      * @param cell The position to set the ToCell
      */
     public static void setPositionToCell(Point cell) {
@@ -105,7 +115,8 @@ public class Game {
 
     /**
      * Returns if the king is in check in the given board
-     * @param board The board to check
+     *
+     * @param board     The board to check
      * @param kingColor The king's color to look for
      * @return <code>true</code> if the king is in check, otherwise <code>false</code>
      */
@@ -114,8 +125,8 @@ public class Game {
         for (int x = 0; x < Game.DIM_CHESSBOARD; x++) {
             for (int y = 0; y < Game.DIM_CHESSBOARD; y++) {
                 if (board[y][x] != null &&
-                    board[y][x].getType() == PieceType.KING &&
-                    board[y][x].getColor() == kingColor) {
+                        board[y][x].getType() == PieceType.KING &&
+                        board[y][x].getColor() == kingColor) {
 
                     return Check.isCellAttacked(new Point(x, y), kingColor, board);
                 }
@@ -131,8 +142,9 @@ public class Game {
 
     /**
      * Promote a given piece
-     * @param piece The piece that has to promote
-     * @param promoteType The type the piece has to promote
+     *
+     * @param piece         The piece that has to promote
+     * @param promoteType   The type the piece has to promote
      * @param promotingCell The cell where the piece will be after promotion
      */
     public static void promote(Piece piece, PieceMoves promoteType, Point promotingCell) {
@@ -156,6 +168,7 @@ public class Game {
 
     /**
      * Get the latest enemy move
+     *
      * @return A pair of coordinates, (From, To)
      */
     public static Point[] getEnemyMove() {
@@ -164,6 +177,7 @@ public class Game {
 
     /**
      * Move the enemy piece
+     *
      * @param packet Packet to get data from
      */
     public void moveEnemy(Packet packet) {
@@ -222,24 +236,25 @@ public class Game {
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
 
-        URL path = ClassLoader.getSystemResource("icon.png");
+
+        URL path = ClassLoader.getSystemResource("loading.gif");
         if (path == null) {
             ErrorPopup.show(7);
             System.exit(-1);
         }
 
-        JLabel loadingGif = new JLabel();
         Image gif = new ImageIcon(path).getImage();
-        loadingGif.setIcon(new ImageIcon(gif.getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
+        JLabel loadingGif = new JLabel(new ImageIcon(gif.getScaledInstance(200, 200, Image.SCALE_DEFAULT)));
         loadingGif.setLocation(MARGIN + (DIM_CHESSBOARD / 2) * CELL_SIZE, MARGIN + (DIM_CHESSBOARD / 2) * CELL_SIZE);
+        loadingGif.setVisible(false);
+        window.getContentPane().add(loadingGif);
+        window.setComponentZOrder(loadingGif, 0);
+        window.repaint();
 
         playButton.addActionListener(e -> {
             window.remove(playButton);
             window.setSize(WINDOW_WIDTH + 19, WINDOW_HEIGHT - MARGIN - DIM_BUTTON_Y + 39);
-
-            window.getContentPane().add(loadingGif);
-            window.setComponentZOrder(loadingGif, 0);
-            window.repaint();
+            loadingGif.setVisible(true);
 
             new Thread(Client::createMatch).start();
         });
@@ -252,6 +267,8 @@ public class Game {
      * Display the main window
      */
     private void displayWindow() {
+
+        window = new JFrame();
         window.setTitle("Chess");
 
         window.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -280,7 +297,9 @@ public class Game {
         window.setResizable(false);
         window.setVisible(true);
 
+
         initPlayButton();
+
     }
 
     /**
@@ -308,7 +327,7 @@ public class Game {
      */
     private void initChessboard() {
         final Color BLACK_CELL = new Color(0xFFEFD5),
-                    WHITE_CELL = new Color(0x654321);
+                WHITE_CELL = new Color(0x654321);
 
         // Create and paint the background of the panel that will contain the chessboard
         chessboardPanel = new JPanel() {

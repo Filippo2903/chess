@@ -36,8 +36,6 @@ public class PlayerHandler {
 
         ready = true;
 
-        System.out.println("Player  "+ playerColor + " is ready (" + ready + ")");
-
         try {
             input = new Scanner(socket.getInputStream());
             output = new PrintWriter(socket.getOutputStream(), true);
@@ -56,10 +54,6 @@ public class PlayerHandler {
 
         // Send the color
         output.println(playerColor);
-    }
-
-    public boolean isConnected() {
-        return socket.isConnected();
     }
 
     public String listenMove() {

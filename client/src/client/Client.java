@@ -6,10 +6,12 @@ import gameUtils.*;
 import modal.ErrorPopup;
 import modal.Theme;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -76,7 +78,12 @@ public class Client {
 //        } while(!valid);
 
         game = new Game();
-        game.startWindow();
+        try {
+            SwingUtilities.invokeAndWait(()->game.startWindow());
+        } catch (InterruptedException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     public static void createMatch() {
