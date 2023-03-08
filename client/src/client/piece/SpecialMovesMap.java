@@ -1,9 +1,8 @@
 package client.piece;
 
 import client.Client;
-import client.Game;
 import client.audio.AudioPlayer;
-import client.audio.AudioType;
+import client.audio.SoundEffect;
 import gameUtils.SpecialMoveType;
 
 import java.awt.*;
@@ -23,7 +22,7 @@ public class SpecialMovesMap {
         put(SpecialMoveType.QUEENSIDE_CASTLE, (from, to) -> castle(SpecialMoveType.QUEENSIDE_CASTLE, from));
 
         put(SpecialMoveType.EN_PASSANT, (from, to) -> {
-            AudioPlayer.play(AudioType.TAKE);
+            AudioPlayer.play(SoundEffect.TAKE);
 
             Client.getGame().getBoard()[from.y][to.x].kill();
         });

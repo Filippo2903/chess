@@ -6,7 +6,12 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class AudioPlayer {
-    public static void play(AudioType audioType) {
+
+    /**
+     * Play the audio of a move
+     * @param soundEffect The audio to play
+     */
+    public static void play(SoundEffect soundEffect) {
         Clip clip;
         try {
             clip = AudioSystem.getClip();
@@ -17,7 +22,7 @@ public class AudioPlayer {
         AudioInputStream ais;
         try {
             ais = AudioSystem.getAudioInputStream(
-                    new BufferedInputStream(Objects.requireNonNull(AudioPlayer.class.getResourceAsStream("/audio/" + audioType.filename)))
+                    new BufferedInputStream(Objects.requireNonNull(AudioPlayer.class.getResourceAsStream("/audio/" + soundEffect.filename)))
             );
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -29,6 +34,5 @@ public class AudioPlayer {
         }
 
         clip.start();
-
     }
 }

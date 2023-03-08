@@ -1,8 +1,5 @@
 package client.movements;
 
-import client.Game;
-import client.piece.Piece;
-import gameUtils.PieceType;
 import gameUtils.SpecialMoveType;
 
 import java.awt.*;

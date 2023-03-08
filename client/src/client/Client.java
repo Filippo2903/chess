@@ -1,20 +1,18 @@
 package client;
 
 import client.audio.AudioPlayer;
-import client.audio.AudioType;
-import gameUtils.*;
+import client.audio.SoundEffect;
+import gameUtils.Packet;
+import gameUtils.PlayerColor;
 import modal.ErrorPopup;
 import modal.Theme;
 
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 public class Client {
     static Socket socket = null;
@@ -22,10 +20,30 @@ public class Client {
     private static BufferedReader is = null;
     private static Game game;
 
+    public static void main(String[] args) {
+        Theme.setTheme();
+
+        System.out.println("Starting client...");
+
+        game = new Game();
+        game.startWindow();
+
+    }
+
+    /**
+     * Get the game
+     *
+     * @return The game
+     */
     public static Game getGame() {
         return game;
     }
 
+    /**
+     * Send a packet to the server
+     *
+     * @param packet The packet to be sent
+     */
     public static void sendMove(Packet packet) {
         try {
             os.println(packet.serializeToString());
@@ -35,6 +53,9 @@ public class Client {
         }
     }
 
+    /**
+     * Recive a move from the server
+     */
     public static void receiveMove() {
         String response = null;
 
@@ -57,35 +78,12 @@ public class Client {
         }
 
         // Move the enemy in the client
-        game.moveEnemy(packet);
+        game.moveEnemyPiece(packet);
     }
 
-    public static void main(String[] args) {
-        Theme.setTheme();
-
-        System.out.println("Starting client...");
-
-        String stringAddress = "127.0.0.1";
-
-        InetAddress address = null;
-//        boolean valid;
-//
-//        do {
-//            stringAddress = JOptionPane.showInputDialog("Inserisci l'indirizzo del server", "127.0.0.1");
-            try {
-                address = InetAddress.getByName(stringAddress);
-//                valid = true;
-            } catch (UnknownHostException e) {
-//                valid = false;
-                ErrorPopup.show("Indirizzo non valido!");
-            }
-//        } while(!valid);
-
-        game = new Game();
-        game.startWindow();
-
-    }
-
+    /**
+     * Create the match
+     */
     public static void createMatch() {
         System.out.println("Connecting to the server...");
         while (true) {
@@ -121,7 +119,7 @@ public class Client {
 
         game.chessboardPanel.repaint();
 
-        AudioPlayer.play(AudioType.GAME_START);
+        AudioPlayer.play(SoundEffect.GAME_START);
 
         // If the client has black, it has to listen first
         if (color == PlayerColor.BLACK) {
@@ -129,6 +127,9 @@ public class Client {
         }
     }
 
+    /**
+     * End the communication with the server
+     */
     public static void endCommunication() {
         try {
             is.close();

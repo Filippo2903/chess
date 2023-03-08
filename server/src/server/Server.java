@@ -12,19 +12,30 @@ import java.util.Objects;
 public class Server {
     public static ServerSocket serverSocket;
 
-    private static Packet turnBoard(Packet packet) {
+    /**
+     * Turn the move, because every player sees the opponent's move mirrored
+     *
+     * @param packet Packet that contains the move
+     * @return The modified packet
+     */
+    private static Packet mirrorMove(Packet packet) {
         packet.from.y = 7 - packet.from.y;
         packet.to.y = 7 - packet.to.y;
 
         return packet;
     }
 
-    private static boolean handleMove(PlayerHandler player) {
+    /**
+     * Wait and handle a move made from a player
+     *
+     * @param player The player who has to make the move
+     */
+    private static void waitAndHandleMove(PlayerHandler player) {
         String serializedMove = player.listenMove();
 
         Packet packet = null;
         try {
-            packet = Server.turnBoard(Packet.fromString(serializedMove));
+            packet = Server.mirrorMove(Packet.fromString(serializedMove));
         } catch (Exception e) {
             ErrorPopup.show(203);
             System.exit(-1);
@@ -38,6 +49,9 @@ public class Server {
         }
     }
 
+    /**
+     * Start the matchmaking
+     */
     public static void startMatchmaking() {
         PlayerColor colorPlayerOne, colorPlayerTwo;
         if ((int) (Math.random() * 2) == 0) {
@@ -71,13 +85,13 @@ public class Server {
         }
 
         if (colorPlayerTwo == PlayerColor.WHITE) {
-            playing = Server.handleMove(playerTwo);
+            Server.waitAndHandleMove(playerTwo);
         }
 
         while (true) {
             waitAndHandleMove(playerOne);
 
-            playing = handleMove(playerTwo);
+            waitAndHandleMove(playerTwo);
         }
     }
 

@@ -1,7 +1,7 @@
 package client;
 
 import client.audio.AudioPlayer;
-import client.audio.AudioType;
+import client.audio.SoundEffect;
 import client.piece.Check;
 import client.piece.Piece;
 import client.piece.PieceMoves;
@@ -15,8 +15,6 @@ import modal.ErrorPopup;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
@@ -46,19 +44,6 @@ public class Game {
         window = new JFrame();
         fromCell = new JLabel();
         toCell = new JLabel();
-    }
-
-    /**
-     * DEBUG
-     */
-    public static void printBoard(Piece[][] _board) {
-        for (Piece[] line : _board) {
-            for (Piece piece : line) {
-                System.out.print(piece == null ? "   " : (piece.getColor().toString().charAt(0) + piece.getType().algebraicNotation) + " ");
-            }
-            System.out.println();
-        }
-        System.out.println();
     }
 
     /**
@@ -257,7 +242,7 @@ public class Game {
      *
      * @param packet Packet to get data from
      */
-    public void moveEnemy(Packet packet) {
+    public void moveEnemyPiece(Packet packet) {
         Piece enemyPiece = board[packet.from.y][packet.from.x];
 
         enemyMove = new Point[]{packet.from, packet.to};

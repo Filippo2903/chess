@@ -49,8 +49,6 @@ public class Packet implements Serializable {
         this.specialMoveType = specialMoveType;
 
         this.newType = newType;
-
-        this.continuePlaying = continuePlaying;
     }
 
     /**

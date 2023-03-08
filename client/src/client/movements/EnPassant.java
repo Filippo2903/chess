@@ -1,7 +1,6 @@
 package client.movements;
 
 import client.Client;
-import client.Game;
 import client.piece.Piece;
 import gameUtils.PieceType;
 import gameUtils.SpecialMoveType;
@@ -14,7 +13,14 @@ public class EnPassant implements Movement {
             new Point(1, -1)
     };
 
-    private boolean checkRules(Point from, Point to) {
+    /**
+     * Check if the piece can do en passant
+     *
+     * @param from The starting cell
+     * @param to   The arrival cell
+     * @return <code>true</code> if the piece can do en passant
+     */
+    private boolean canEnPassant(Point from, Point to) {
         final int EN_PASSANT_ROW = 3;
         final int START_ROW = 1;
 
@@ -35,7 +41,7 @@ public class EnPassant implements Movement {
     public boolean canMove(Point from, Point to) {
         for (Point move : moves) {
             if (MovementUtils.checkMove(from, to, move) &&
-                checkRules(from, to)) {
+                    canEnPassant(from, to)) {
 
                 return true;
             }

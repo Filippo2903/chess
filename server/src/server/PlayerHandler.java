@@ -3,16 +3,18 @@ package server;
 import gameUtils.PlayerColor;
 import modal.ErrorPopup;
 
-import java.awt.desktop.ScreenSleepEvent;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+/**
+ * Handles a client (player)
+ */
 public class PlayerHandler {
 
-    private PlayerColor playerColor;
+    private final PlayerColor playerColor;
     private Socket socket;
     private Scanner input;
     private PrintWriter output;
@@ -21,10 +23,18 @@ public class PlayerHandler {
 
     private boolean ready = false;
 
+    /**
+     * Initialize a PlayerHandler
+     *
+     * @param playerColor The player color
+     */
     public PlayerHandler(PlayerColor playerColor) {
         this.playerColor = playerColor;
     }
 
+    /**
+     * Wait for the client connection
+     */
     public void waitConnection() {
         try {
             socket = Server.serverSocket.accept();
@@ -56,6 +66,11 @@ public class PlayerHandler {
         output.println(playerColor);
     }
 
+    /**
+     * Wait for the client to make a move
+     *
+     * @return The serialized, base64 encoded move
+     */
     public String listenMove() {
         String serializedMove = null;
 
@@ -70,23 +85,38 @@ public class PlayerHandler {
         return serializedMove;
     }
 
+    /**
+     * Send a serialized move to the client
+     *
+     * @param serializedMove The serialized, base64 encoded string to send
+     */
     public void send(String serializedMove) {
         output.println(serializedMove);
     }
 
-    public void setOpponent(PlayerHandler opponent) {
-        this.opponent = opponent;
-    }
+    /**
+     * Returns the opponent Player Handler
+     *
+     * @return The opponent <code>PlayerHandler</code>
+     */
     public PlayerHandler getOpponent() {
         return opponent;
     }
-    public PlayerColor getPlayerColor() {
-        return playerColor;
-    }
-    public void setPlayerColor(PlayerColor color) {
-        playerColor = color;
+
+    /**
+     * Set the player's opponent
+     *
+     * @param opponent The opponent <code>PlayerHandler</code>
+     */
+    public void setOpponent(PlayerHandler opponent) {
+        this.opponent = opponent;
     }
 
+    /**
+     * Returns if the player is ready to play
+     *
+     * @return <code>true</code> if the player is ready to play, otherwise <code>false</code>
+     */
     public boolean isReady() {
         return ready;
     }

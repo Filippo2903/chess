@@ -1,19 +1,18 @@
 package client.movements;
 
-import client.Game;
-
 import java.awt.*;
 
 public class DiagonalMovement implements Movement {
-    private final boolean linearMovement;
-    public DiagonalMovement(boolean linearMovement) {
-        this.linearMovement = linearMovement;
+    private final boolean isLongMovement;
+
+    public DiagonalMovement(boolean isLongMovement) {
+        this.isLongMovement = isLongMovement;
     }
 
     /**
-     * @return the direction of the move, return a Point(0, 0) if the move is not diagonal
+     * @return the direction of the move, return a <code>Point(0, 0)</code> if the move is not diagonal
      */
-    private Point diagonalMove(Point from, Point to) {
+    private Point moveDirection(Point from, Point to) {
         Point direction = new Point(0, 0);
 
         if (Math.abs(to.x - from.x) == Math.abs(to.y - from.y) ||
@@ -30,13 +29,13 @@ public class DiagonalMovement implements Movement {
 
     @Override
     public boolean canMove(Point from, Point to) {
-        Point direction = diagonalMove(from, to);
+        Point direction = moveDirection(from, to);
 
         if (direction.x == 0 && direction.y == 0) {
             return false;
         }
 
-        if (linearMovement) {
+        if (isLongMovement) {
             return MovementUtils.isPathFree(from, to, direction);
         }
 

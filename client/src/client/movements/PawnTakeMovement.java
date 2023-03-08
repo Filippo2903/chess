@@ -1,7 +1,6 @@
 package client.movements;
 
 import client.Client;
-import client.Game;
 import client.piece.Piece;
 
 import java.awt.*;
@@ -12,6 +11,7 @@ public class PawnTakeMovement implements Movement {
             new Point(1, -1)
     };
 
+    @Override
     public boolean canMove(Point from, Point to) {
         Piece[][] board = Client.getGame().getBoard();
 

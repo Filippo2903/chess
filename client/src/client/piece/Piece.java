@@ -2,10 +2,7 @@ package client.piece;
 
 import client.Client;
 import client.Game;
-import client.audio.AudioPlayer;
-import client.audio.AudioType;
 import client.movements.Movement;
-import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 import gameUtils.SpecialMoveType;

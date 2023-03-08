@@ -1,7 +1,6 @@
 package client.movements;
 
 import client.Client;
-import client.Game;
 import client.piece.Piece;
 import gameUtils.SpecialMoveType;
 

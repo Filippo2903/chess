@@ -8,6 +8,7 @@ public class StraightMovement implements Movement {
     public StraightMovement(boolean linearMovement) {
         this.linearMovement = linearMovement;
     }
+
     /**
      * @return the direction of the move, return a Point(0, 0) if the move is not straight
      */
