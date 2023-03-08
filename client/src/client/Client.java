@@ -17,10 +17,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 public class Client {
+    static Socket socket = null;
     private static PrintWriter os = null;
     private static BufferedReader is = null;
-    static Socket socket = null;
-
     private static Game game;
 
     public static Game getGame() {
@@ -134,14 +133,13 @@ public class Client {
         try {
             is.close();
         } catch (IOException e) {
-            ErrorPopup.show(299);
+            ErrorPopup.show(298);
         }
         os.close();
         try {
             socket.close();
         } catch (IOException e) {
-            ErrorPopup.show(298);
+            ErrorPopup.show(299);
         }
-        System.out.println("Connection Closed");
     }
 }

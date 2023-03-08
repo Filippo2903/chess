@@ -4,7 +4,7 @@ import client.Client;
 import client.Game;
 import client.piece.Piece;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class SingleStepMovement implements Movement {
     @Override

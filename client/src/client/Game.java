@@ -10,6 +10,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import gameUtils.Packet;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
+import gameUtils.SpecialMoveType;
 import modal.ErrorPopup;
 
 import javax.swing.*;
@@ -26,24 +27,20 @@ import java.util.Objects;
 public class Game {
     public static final int DIM_CHESSBOARD = 8;
     private static final int WINDOW_WIDTH = 510, WINDOW_HEIGHT = 570;
+    public static final int DIM_BUTTON_X = WINDOW_WIDTH / 2;
     private static final int MARGIN = WINDOW_WIDTH / (4 * DIM_CHESSBOARD + 2); // CELL_SIZE / 4
     public static final int CELL_SIZE = (WINDOW_WIDTH - MARGIN * 2) / DIM_CHESSBOARD;
-
-    public static final int DIM_BUTTON_X = WINDOW_WIDTH / 2;
     public static final int DIM_BUTTON_Y = WINDOW_HEIGHT - (CELL_SIZE * DIM_CHESSBOARD + MARGIN * 3);
-
-    private JLabel loadingGif;
     private final JLabel fromCell;
     private final JLabel toCell;
-
     // The board where all the pieces will be stored
     private final Piece[][] board = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
-
+    public JPanel chessboardPanel;
+    private JLabel loadingGif;
     private PlayerColor clientColor = PlayerColor.WHITE;
     private PlayerColor playerTurn;
     private Point[] enemyMove = new Point[2];
     private JFrame window;
-    public JPanel chessboardPanel;
 
     public Game() {
         window = new JFrame();
@@ -66,6 +63,7 @@ public class Game {
 
     /**
      * Get the player color
+     *
      * @return The player color
      */
     public PlayerColor getPlayerColor() {
@@ -74,6 +72,7 @@ public class Game {
 
     /**
      * Get the player who has to move
+     *
      * @return The player
      */
     public PlayerColor getPlayerTurn() {
@@ -82,6 +81,7 @@ public class Game {
 
     /**
      * Get the board where all the pieces are stored
+     *
      * @return The board
      */
     public Piece[][] getBoard() {
@@ -97,6 +97,7 @@ public class Game {
 
     /**
      * Edit a cell of the data board
+     *
      * @param cell  Cell to edit
      * @param value Value to assign to the cell
      */
@@ -106,6 +107,7 @@ public class Game {
 
     /**
      * Set the FromCell position
+     *
      * @param cell The position to set the FromCell
      */
     public void setPositionFromCell(Point cell) {
@@ -115,6 +117,7 @@ public class Game {
 
     /**
      * Set the ToCell position
+     *
      * @param cell The position to set the ToCell
      */
     public void setPositionToCell(Point cell) {
@@ -124,6 +127,7 @@ public class Game {
 
     /**
      * Highlight both the attacker piece and the attacked piece cell to denote checkmate
+     *
      * @param attackerCell The cell where the attacker piece is
      * @param attackedCell The cell where the attacked piece is
      */
@@ -142,7 +146,8 @@ public class Game {
 
     /**
      * Find the king in the board
-     * @param board The board where to look for the king
+     *
+     * @param board     The board where to look for the king
      * @param kingColor The king color
      * @return The king's position
      */
@@ -150,8 +155,8 @@ public class Game {
         for (int x = 0; x < Game.DIM_CHESSBOARD; x++) {
             for (int y = 0; y < Game.DIM_CHESSBOARD; y++) {
                 if (board[y][x] != null &&
-                    board[y][x].getType() == PieceType.KING &&
-                    board[y][x].getColor() == kingColor) {
+                        board[y][x].getType() == PieceType.KING &&
+                        board[y][x].getColor() == kingColor) {
 
                     return new Point(x, y);
                 }
@@ -163,6 +168,7 @@ public class Game {
 
     /**
      * Get the type of the promotion
+     *
      * @return the type decided from the player
      */
     public PieceMoves promptPromotionType() {
@@ -171,8 +177,9 @@ public class Game {
 
     /**
      * Promote a given piece
-     * @param piece The piece that has to promote
-     * @param promoteType The type the piece has to promote
+     *
+     * @param piece         The piece that has to promote
+     * @param promoteType   The type the piece has to promote
      * @param promotingCell The cell where the piece will be after promotion
      */
     public void promote(Piece piece, PieceMoves promoteType, Point promotingCell) {
@@ -196,6 +203,7 @@ public class Game {
 
     /**
      * Get the opponent player's color
+     *
      * @return The opponent color
      */
     public PlayerColor getOpponentColor() {
@@ -204,6 +212,7 @@ public class Game {
 
     /**
      * Get the latest enemy move
+     *
      * @return A pair of coordinates, (From, To)
      */
     public Point[] getEnemyMove() {
@@ -211,7 +220,41 @@ public class Game {
     }
 
     /**
+     * Check if the client has won
+     *
+     * @param to The last move
+     * @return <code>true</code> if the client has won, otherwise <code>false</code>
+     */
+    public boolean winCheck(Point to) {
+        Point oppositeKingPosition = findKing(board, getOpponentColor());
+        if (Check.isCheckMate(oppositeKingPosition, getOpponentColor())) {
+            highlightCheckmate(to, oppositeKingPosition);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if the client has lost
+     *
+     * @return <code>true</code> if the client has won, otherwise <code>false</code>
+     */
+    public boolean defeatCheck() {
+        Point kingPosition = findKing(board, clientColor);
+        Point attackerCell = Check.getAttackerCell(kingPosition, clientColor, board);
+
+        if (attackerCell != null) {
+            if (Check.isCheckMate(kingPosition, clientColor)) {
+                highlightCheckmate(attackerCell, kingPosition);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Move the enemy piece
+     *
      * @param packet Packet to get data from
      */
     public void moveEnemy(Packet packet) {
@@ -219,72 +262,110 @@ public class Game {
 
         enemyMove = new Point[]{packet.from, packet.to};
 
-        // Delete previous position
-        editBoardCell(packet.from, null);
-
         SpecialMovesMap.specialMovesMap.get(packet.specialMoveType).move(packet.from, packet.to);
 
         if (board[packet.to.y][packet.to.x] != null) {
-            AudioPlayer.play(AudioType.TAKE);
+            AudioPlayer.play(SoundEffect.TAKE);
             board[packet.to.y][packet.to.x].kill();
         } else if (packet.specialMoveType == null) {
-            AudioPlayer.play(AudioType.MOVE);
+            AudioPlayer.play(SoundEffect.MOVE);
         }
+
+        // Delete previous position
+        editBoardCell(packet.from, null);
+
+        // Update the from and to cell highlights
+        setPositionFromCell(packet.from);
+        setPositionToCell(packet.to);
 
         // Move the piece to the target cell
         enemyPiece.animatedMove(packet.to);
 
         // Check if the piece type has to change
-        if (packet.newType != null && packet.to.y == 7) {
+        if (packet.newType != null) {
             promote(enemyPiece, PieceMoves.valueOf(packet.newType.toString()), packet.to);
+        }
+
+        if (defeatCheck()) {
+            endGame();
+            return;
         }
 
         chessboardPanel.repaint();
 
         // Change the player turn
         changePlayerTurn();
-
-        Point kingPosition = findKing(board, clientColor);
-
-        if (kingPosition == null) {
-            ErrorPopup.show(400);
-            System.exit(-1);
-        }
-
-        Point attackerCell = Check.getAttackerCell(kingPosition, clientColor, board);
-
-        // Update the from and to cell highlights
-        setPositionFromCell(packet.from);
-        setPositionToCell(packet.to);
-
-        if (attackerCell != null) {
-            if (Check.isCheckMate(kingPosition, clientColor)) {
-                highlightCheckmate(attackerCell, kingPosition);
-                System.out.println("Hai perso");
-                endGame();
-            }
-        }
     }
 
+    /**
+     * Move a piece from a cell to another
+     *
+     * @param piece       The piece that has to move
+     * @param from        The starting position
+     * @param to          The arrival position
+     * @param specialMove The special move, <code>null</code> if it's not a special move
+     */
+    public void movePiece(Piece piece, Point from, Point to, SpecialMoveType specialMove) {
+        SpecialMovesMap.specialMovesMap.get(specialMove).move(from, to);
+
+        if (board[to.y][to.x] != null) {
+            AudioPlayer.play(SoundEffect.TAKE);
+            board[to.y][to.x].kill();
+        } else if (specialMove == null) {
+            AudioPlayer.play(SoundEffect.MOVE);
+        }
+
+        // Add the from and to cells highlights
+        setPositionFromCell(from);
+        setPositionToCell(to);
+
+        // Check if the piece is a pawn, and it's going to promote
+        if (piece.getType() == PieceType.PAWN && to.y == 0) {
+            PieceMoves promoteType = promptPromotionType();
+            promote(piece, promoteType, to);
+
+            // Send the server the move specifying a change in the piece's type
+            Client.sendMove(new Packet(from, to, PieceType.valueOf(promoteType.toString())));
+        } else {
+            Client.sendMove(new Packet(from, to, specialMove));
+
+            // Change the position in the client
+            piece.setPosition(to);
+        }
+
+        if (winCheck(to)) {
+            endGame();
+            return;
+        }
+
+        chessboardPanel.repaint();
+
+        changePlayerTurn();
+
+        // Start listening for the enemy move
+        new Thread(Client::receiveMove).start();
+    }
+
+    /**
+     * End the game
+     */
     public void endGame() {
         window.setSize(WINDOW_WIDTH + 19, WINDOW_HEIGHT + 39);
-        try {
-            Client.socket.close();
-        } catch (IOException e) {
-            ErrorPopup.show(206);
-        }
+
+        Client.endCommunication();
+
         playerTurn = PlayerColor.BLACK;
         clientColor = PlayerColor.WHITE;
 
-        displayLobby();
+        initPlayButton("Nuova partita");
     }
 
     /**
      * Display the play button
      */
-    private void initPlayButton() {
-        JButton playButton = new JButton("Play");
-        playButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 38));
+    private void initPlayButton(String content) {
+        JButton playButton = new JButton(content);
+        playButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
 
         playButton.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
         playButton.setBorderPainted(false);
@@ -298,7 +379,7 @@ public class Game {
                 DIM_BUTTON_X, DIM_BUTTON_Y
         );
 
-        SwingUtilities.invokeLater(()->{
+        SwingUtilities.invokeLater(() -> {
             URL path = ClassLoader.getSystemResource("loading.gif");
             if (path == null) {
                 ErrorPopup.show(7);
@@ -481,11 +562,7 @@ public class Game {
      */
     public void startWindow() {
         displayWindow();
-        displayLobby();
-    }
-
-    public void displayLobby() {
-        initPlayButton();
+        initPlayButton("Gioca");
         drawBoard();
     }
 

@@ -7,12 +7,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class DragAndDrop extends MouseAdapter {
-    private boolean undo;
     private final Piece piece;
     private final Point newPosition = new Point();
+    private boolean undo;
 
     public DragAndDrop(Piece piece) {
-    	this.piece = piece;
+        this.piece = piece;
     }
 
     @Override

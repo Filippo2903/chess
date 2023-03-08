@@ -12,10 +12,7 @@ import gameUtils.SpecialMoveType;
 import modal.ErrorPopup;
 
 import javax.swing.*;
-
-import java.awt.Point;
-import java.awt.Image;
-import java.awt.datatransfer.ClipboardOwner;
+import java.awt.*;
 import java.net.URL;
 import java.util.Arrays;
 
@@ -23,15 +20,16 @@ import java.util.Arrays;
  * A class that represents a Piece and handles all his features
  */
 public class Piece extends JLabel {
-    public Point currentPosition = new Point(-1, -1);
     private final PlayerColor pieceColor;
     private final PieceMoves pieceMoves;
+    public Point currentPosition = new Point(-1, -1);
     private boolean hasMoved = false;
 
     /**
      * Create a piece with the given color and possible moves
+     *
      * @param playerColor The piece color
-     * @param pieceMoves The moves that can the piece make
+     * @param pieceMoves  The moves that can the piece make
      */
     public Piece(PlayerColor playerColor, PieceMoves pieceMoves) {
         super();
@@ -43,7 +41,7 @@ public class Piece extends JLabel {
         this.setVerticalAlignment(JLabel.TOP);
 
         this.setVisible(true);
-        
+
         DragAndDrop dragAndDrop = new DragAndDrop(this);
 
         this.addMouseListener(dragAndDrop);
@@ -52,6 +50,7 @@ public class Piece extends JLabel {
 
     /**
      * Move a piece to a point smoothly
+     *
      * @param to Arrival cell
      */
     public void animatedMove(Point to) {
@@ -66,8 +65,8 @@ public class Piece extends JLabel {
         int widthDifference = goalAnimation.x - animationPosition.x;
         int heightDifference = goalAnimation.y - animationPosition.y;
 
-        double stepWidth = (double)widthDifference / frame;
-        double stepHeight = (double)heightDifference / frame;
+        double stepWidth = (double) widthDifference / frame;
+        double stepHeight = (double) heightDifference / frame;
 
         for (int stepCount = 0; stepCount < frame; stepCount++) {
             animationPosition.x += stepWidth;
@@ -87,6 +86,7 @@ public class Piece extends JLabel {
 
     /**
      * Check if the piece can move
+     *
      * @param to The cell where the piece wants to move
      * @return <code>true</code> if the piece can move, <code>false</code> if it can't move
      */
@@ -102,13 +102,14 @@ public class Piece extends JLabel {
 
     /**
      * Move a piece to a point with all the needed checks
+     *
      * @param to Arrival cell
      */
     public void move(Point to) {
         // If it's not the client turn or the client tries to move a piece that isn't his, don't move
         if (CheckPlayerMove.isNotPlayerTurn() ||
-            CheckPlayerMove.isNotPlayerPiece(this.getColor()) ||
-            CheckPlayerMove.isMovingOnHisOwnPiece(this.getColor(), to)) {
+                CheckPlayerMove.isNotPlayerPiece(this.getColor()) ||
+                CheckPlayerMove.isMovingOnHisOwnPiece(this.getColor(), to)) {
 
             this.setLocation(currentPosition.x * Game.CELL_SIZE, currentPosition.y * Game.CELL_SIZE);
             return;
@@ -128,15 +129,14 @@ public class Piece extends JLabel {
                 }
 
                 if (Check.isCellAttacked(Client.getGame().findKing(Client.getGame().getBoard(), pieceColor), pieceColor, Client.getGame().getBoard()) &&
-                    (movement.getSpecialMove() == SpecialMoveType.KINGSIDE_CASTLE ||
-                     movement.getSpecialMove() == SpecialMoveType.QUEENSIDE_CASTLE)) {
+                        (movement.getSpecialMove() == SpecialMoveType.KINGSIDE_CASTLE ||
+                                movement.getSpecialMove() == SpecialMoveType.QUEENSIDE_CASTLE)) {
                     continue;
                 }
 
                 Piece[][] temporaryBoard = Arrays.stream(Client.getGame().getBoard())
                         .map(row -> Arrays.copyOf(row, row.length))
                         .toArray(Piece[][]::new);
-
                 temporaryBoard[currentPosition.y][currentPosition.x] = null;
                 temporaryBoard[to.y][to.x] = this;
 
@@ -144,55 +144,9 @@ public class Piece extends JLabel {
                     continue;
                 }
 
-                SpecialMovesMap.specialMovesMap.get(movement.getSpecialMove()).move(currentPosition, to);
-
-                if (Client.getGame().getBoard()[to.y][to.x] != null) {
-                    AudioPlayer.play(AudioType.TAKE);
-                    Client.getGame().getBoard()[to.y][to.x].kill();
-                } else if (movement.getSpecialMove() == null){
-                    AudioPlayer.play(AudioType.MOVE);
-                }
-
-                // Check if the piece is a pawn, and it's going to promote
-                if (pieceMoves.type == PieceType.PAWN && to.y == 0) {
-                    PieceMoves promoteType = Client.getGame().promptPromotionType();
-
-                    // Add the from and to cells highlights
-                    Client.getGame().setPositionFromCell(currentPosition);
-                    Client.getGame().setPositionToCell(to);
-
-                    Client.getGame().promote(this, promoteType, to);
-
-                    // Send the server the move specifying a change in the piece's type
-                    Client.sendMove(new Packet(currentPosition, to, PieceType.valueOf(promoteType.toString())));
-                } else {
-                    Client.sendMove(new Packet(currentPosition, to, movement.getSpecialMove()));
-
-                    // Add the from and to cells highlights
-                    Client.getGame().setPositionFromCell(currentPosition);
-                    Client.getGame().setPositionToCell(to);
-
-                    // Change the position in the client
-                    this.setPosition(to);
-                }
+                Client.getGame().movePiece(this, currentPosition, to, movement.getSpecialMove());
 
                 hasMoved = true;
-
-                Point oppositeKingPosition = Client.getGame().findKing(Client.getGame().getBoard(), Client.getGame().getOpponentColor());
-                if (Check.isCheckMate(oppositeKingPosition, Client.getGame().getOpponentColor())) {
-
-                    Client.getGame().highlightCheckmate(currentPosition, oppositeKingPosition);
-                    System.out.println("Hai vinto");
-                    Client.getGame().endGame();
-                    return;
-                }
-
-                Client.getGame().changePlayerTurn();
-
-                // Start listening for the enemy move
-                new Thread(Client::receiveMove).start();
-
-                Client.getGame().chessboardPanel.repaint();
 
                 return;
             }
@@ -205,6 +159,7 @@ public class Piece extends JLabel {
     /**
      * Set the piece position to a new position without checking for anything, except for checking if the piece is in
      * the board
+     *
      * @param newPosition The new piece position
      */
     public void setPosition(Point newPosition) {
@@ -235,6 +190,7 @@ public class Piece extends JLabel {
 
     /**
      * Get the piece color
+     *
      * @return The piece color
      */
     public PlayerColor getColor() {
@@ -243,6 +199,7 @@ public class Piece extends JLabel {
 
     /**
      * Get the piece type
+     *
      * @return The piece type
      */
     public PieceType getType() {
@@ -250,19 +207,12 @@ public class Piece extends JLabel {
     }
 
     /**
-     * Get the piece position
-     * @return The piece position
-     */
-    public Point getCurrentPosition() {
-        return currentPosition;
-    }
-
-    /**
      * Get if the piece has moved
+     *
      * @return <code>true</code> if the piece has moved, <code>false</code> if the piece has not moved
      */
-    public boolean hasMoved() {
-        return hasMoved;
+    public boolean hasNotMoved() {
+        return !hasMoved;
     }
 
     /**
@@ -271,9 +221,9 @@ public class Piece extends JLabel {
     public void setImage() {
         String iconName =
                 pieceColor.toString().toLowerCase() +
-                pieceMoves.type.toString().substring(0, 1).toUpperCase() +
-                pieceMoves.type.toString().substring(1).toLowerCase() +
-                ".png";
+                        pieceMoves.type.toString().substring(0, 1).toUpperCase() +
+                        pieceMoves.type.toString().substring(1).toLowerCase() +
+                        ".png";
 
         URL path = ClassLoader.getSystemResource(iconName);
         if (path == null) {

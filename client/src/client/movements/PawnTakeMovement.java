@@ -4,7 +4,7 @@ import client.Client;
 import client.Game;
 import client.piece.Piece;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class PawnTakeMovement implements Movement {
     private final Point[] moves = {
@@ -17,7 +17,7 @@ public class PawnTakeMovement implements Movement {
 
         for (Point move : moves) {
             if (MovementUtils.checkMove(from, to, move) &&
-                board[to.y][to.x] != null) {
+                    board[to.y][to.x] != null) {
 
                 return true;
             }

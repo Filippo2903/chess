@@ -11,59 +11,38 @@ public class Packet implements Serializable {
     // Arrival position
     public final Point to;
 
-    // Is game over?
-    public final boolean continuePlaying;
-
     public final SpecialMoveType specialMoveType;
 
     public final PieceType newType;
 
     /**
      * Create a packet that represents a promotion
-     * @param from The starting cell
-     * @param to The arrival cell
+     *
+     * @param from    The starting cell
+     * @param to      The arrival cell
      * @param newType The promoted type
      */
     public Packet(Point from, Point to, PieceType newType) {
-        this(from, to, null, newType, true);
-    }
-
-    /**
-     * Create a packet that represents a simple move
-     * @param from The starting cell
-     * @param to The arrival cell
-     */
-    public Packet(Point from, Point to) {
-        this(from, to, null, null, true);
+        this(from, to, null, newType);
     }
 
     /**
      * Creata a packet that represents a special move
-     * @param from The starting cell
-     * @param to The arrival cell
+     *
+     * @param from            The starting cell
+     * @param to              The arrival cell
      * @param specialMoveType The special move that has been made
      */
     public Packet(Point from, Point to, SpecialMoveType specialMoveType) {
-        this(from, to, specialMoveType, null, true);
+        this(from, to, specialMoveType, null);
     }
 
     /**
-     * Create a packet that specifies if the game is over
-     * @param from The starting cell
-     * @param to The arrival cell
-     * @param continuePlaying Is the game over?
-     */
-    public Packet(Point from, Point to, boolean continuePlaying) {
-        this(from, to, null, null, continuePlaying);
-    }
-
-    /**
-     * @param from Starting position of the piece
-     * @param to Arrival position of the piece
+     * @param from            Starting position of the piece
+     * @param to              Arrival position of the piece
      * @param specialMoveType Special move
-     * @param continuePlaying Is game over?
      */
-    public Packet(Point from, Point to, SpecialMoveType specialMoveType, PieceType newType, boolean continuePlaying) {
+    public Packet(Point from, Point to, SpecialMoveType specialMoveType, PieceType newType) {
         this.from = from;
         this.to = to;
 
@@ -76,6 +55,7 @@ public class Packet implements Serializable {
 
     /**
      * Deserialize a base-64 encoded string to a Packet object
+     *
      * @param input String to be decoded and deserialized
      * @return The serialized Packet object
      */
@@ -96,6 +76,7 @@ public class Packet implements Serializable {
 
     /**
      * Serialize the Packet to a base-64 encoded String
+     *
      * @return The serialized, encoded string
      */
     public String serializeToString() throws IOException {

@@ -30,18 +30,12 @@ public class Server {
             System.exit(-1);
         }
 
-        if (!packet.continuePlaying) {
-            return false;
-        }
-
         try {
             player.getOpponent().send(Objects.requireNonNull(packet).serializeToString());
         } catch (IOException e) {
             ErrorPopup.show(204);
             System.exit(-1);
         }
-
-        return true;
     }
 
     public static void startMatchmaking() {
@@ -76,15 +70,12 @@ public class Server {
             throw new RuntimeException(e);
         }
 
-        boolean playing = true;
         if (colorPlayerTwo == PlayerColor.WHITE) {
             playing = Server.handleMove(playerTwo);
         }
 
-        while (playing) {
-            playing = handleMove(playerOne);
-
-            if (!playing) break;
+        while (true) {
+            waitAndHandleMove(playerOne);
 
             playing = handleMove(playerTwo);
         }

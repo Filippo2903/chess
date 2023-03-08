@@ -1,6 +1,6 @@
 package client.audio;
 
-public enum AudioType {
+public enum SoundEffect {
     CASTLE,
     CHECK,
     CHECKMATE,
@@ -12,7 +12,7 @@ public enum AudioType {
 
     public final String filename;
 
-    AudioType() {
+    SoundEffect() {
         this.filename = this.toString().toLowerCase() + ".wav";
     }
 }

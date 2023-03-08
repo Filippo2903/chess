@@ -1,20 +1,18 @@
 package client.piece;
 
 import client.Client;
+import client.Game;
 import client.movements.LMovement;
 import gameUtils.PieceType;
 import gameUtils.PlayerColor;
 
-import client.Game;
-import modal.ErrorPopup;
-
-import java.awt.Point;
+import java.awt.*;
 
 public class Check {
     private static boolean isInsideBoard(Point cell) {
         return
-            cell.y < Game.DIM_CHESSBOARD && cell.y >= 0 &&
-            cell.x  < Game.DIM_CHESSBOARD && cell.x >= 0;
+                cell.y < Game.DIM_CHESSBOARD && cell.y >= 0 &&
+                        cell.x < Game.DIM_CHESSBOARD && cell.x >= 0;
     }
 
     public static Point getAttackerCell(Point cell, PlayerColor pieceColor, Piece[][] board) {
@@ -28,9 +26,9 @@ public class Check {
             Point checkedCell = new Point(cell.x + pawnTakeMove.x, cell.y + pawnTakeMove.y);
 
             if (isInsideBoard(checkedCell) &&
-                board[checkedCell.y][checkedCell.x] != null &&
-                board[checkedCell.y][checkedCell.x].getType() == PieceType.PAWN &&
-                board[checkedCell.y][checkedCell.x].getColor() != pieceColor) {
+                    board[checkedCell.y][checkedCell.x] != null &&
+                    board[checkedCell.y][checkedCell.x].getType() == PieceType.PAWN &&
+                    board[checkedCell.y][checkedCell.x].getColor() != pieceColor) {
 
                 return checkedCell;
             }
@@ -40,9 +38,9 @@ public class Check {
             Point checkedCell = new Point(cell.x + move.x, cell.y + move.y);
 
             if (isInsideBoard(checkedCell) &&
-                board[checkedCell.y][checkedCell.x] != null &&
-                board[checkedCell.y][checkedCell.x].getColor() != pieceColor &&
-                board[checkedCell.y][checkedCell.x].canMove(cell, board)) {
+                    board[checkedCell.y][checkedCell.x] != null &&
+                    board[checkedCell.y][checkedCell.x].getColor() != pieceColor &&
+                    board[checkedCell.y][checkedCell.x].canMove(cell, board)) {
 
                 return checkedCell;
             }
@@ -63,7 +61,7 @@ public class Check {
             Point pathController = new Point(cell.x + direction.x, cell.y + direction.y);
 
             while (isInsideBoard(pathController) &&
-                   board[pathController.y][pathController.x] == null) {
+                    board[pathController.y][pathController.x] == null) {
 
                 pathController.x += direction.x;
                 pathController.y += direction.y;
@@ -103,10 +101,10 @@ public class Check {
             Point checkedCell = new Point(kingPosition.x + move.x, kingPosition.y + move.y);
 
             if (isInsideBoard(checkedCell) &&
-                !isCellAttacked(checkedCell, pieceColor, board)) {
+                    !isCellAttacked(checkedCell, pieceColor, board)) {
 
                 if (board[checkedCell.y][checkedCell.x] != null &&
-                    board[checkedCell.y][checkedCell.x].getColor() == pieceColor) {
+                        board[checkedCell.y][checkedCell.x].getColor() == pieceColor) {
                     continue;
                 }
 

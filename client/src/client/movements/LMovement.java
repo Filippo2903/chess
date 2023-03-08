@@ -1,6 +1,6 @@
 package client.movements;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class LMovement implements Movement {
     private static final Point[] moves = {
@@ -14,6 +14,10 @@ public class LMovement implements Movement {
             new Point(-2, 1)
     };
 
+    public static Point[] getMoves() {
+        return moves;
+    }
+
     @Override
     public boolean canMove(Point from, Point to) {
         for (Point move : moves) {
@@ -23,9 +27,5 @@ public class LMovement implements Movement {
         }
 
         return false;
-    }
-
-    public static Point[] getMoves() {
-        return moves;
     }
 }

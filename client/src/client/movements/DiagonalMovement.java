@@ -17,9 +17,9 @@ public class DiagonalMovement implements Movement {
         Point direction = new Point(0, 0);
 
         if (Math.abs(to.x - from.x) == Math.abs(to.y - from.y) ||
-            Math.abs(to.x + from.x) == Math.abs(to.y - from.y) ||
-            Math.abs(to.x + from.x) == Math.abs(to.y + from.y) ||
-            Math.abs(to.x - from.x) == Math.abs(to.y + from.y)) {
+                Math.abs(to.x + from.x) == Math.abs(to.y - from.y) ||
+                Math.abs(to.x + from.x) == Math.abs(to.y + from.y) ||
+                Math.abs(to.x - from.x) == Math.abs(to.y + from.y)) {
 
             direction.x = from.x > to.x ? -1 : 1;
             direction.y = from.y > to.y ? -1 : 1;

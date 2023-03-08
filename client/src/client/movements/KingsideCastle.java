@@ -5,7 +5,7 @@ import client.piece.Piece;
 import gameUtils.PieceType;
 import gameUtils.SpecialMoveType;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class KingsideCastle implements Movement {
     private final Point ROOK_POSITION = new Point(7, 7);
@@ -13,10 +13,9 @@ public class KingsideCastle implements Movement {
 
     @Override
     public boolean canMove(Point from, Point to) {
-        return
-            MovementUtils.checkMove(from, to, move) &&
-            MovementUtils.checkCastleRules(ROOK_POSITION) &&
-            MovementUtils.isPathFree(from, ROOK_POSITION, new Point(1, 0));
+        return MovementUtils.checkMove(from, to, move) &&
+                MovementUtils.checkCastleRules(ROOK_POSITION) &&
+                MovementUtils.isPathFree(from, ROOK_POSITION, new Point(1, 0));
     }
 
     @Override

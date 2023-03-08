@@ -4,14 +4,13 @@ import client.Game;
 import client.piece.Piece;
 import gameUtils.PieceType;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class MovementUtils {
     private static Piece[][] board = new Piece[Game.DIM_CHESSBOARD][Game.DIM_CHESSBOARD];
     public static boolean checkMove(Point from, Point to, Point move) {
-        return
-            to.x == from.x + move.x &&
-            to.y == from.y + move.y;
+        return to.x == from.x + move.x &&
+                to.y == from.y + move.y;
     }
 
     public static void setBoard(Piece[][] board) {
@@ -37,11 +36,11 @@ public class MovementUtils {
         final Point KING_POSITION = new Point(4, 7);
 
         return
-            board[KING_POSITION.y][KING_POSITION.x] != null &&
-            board[KING_POSITION.y][KING_POSITION.x].getType() == PieceType.KING &&
-            !board[KING_POSITION.y][KING_POSITION.x].hasMoved() &&
-            board[rookPosition.y][rookPosition.x] != null &&
-            board[rookPosition.y][rookPosition.x].getType() == PieceType.ROOK &&
-            !board[rookPosition.y][rookPosition.x].hasMoved();
+                board[KING_POSITION.y][KING_POSITION.x] != null &&
+                        board[KING_POSITION.y][KING_POSITION.x].getType() == PieceType.KING &&
+                        board[KING_POSITION.y][KING_POSITION.x].hasNotMoved() &&
+                        board[rookPosition.y][rookPosition.x] != null &&
+                        board[rookPosition.y][rookPosition.x].getType() == PieceType.ROOK &&
+                        board[rookPosition.y][rookPosition.x].hasNotMoved();
     }
 }
