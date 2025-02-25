@@ -51,8 +51,3 @@ chess-master/
  ├── README.md # Project documentation
  └── chess.iml # IntelliJ IDEA module file
 ```
-
-### Future Improvements
- - Implement support for additional rules like draw by threefold repetition and 50-move rule.
- - Implement resign functionality.
- - Enable reconnection functionality for clients in case of network disruptions.
