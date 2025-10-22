@@ -84,7 +84,14 @@ public class Check {
     }
 
     public static boolean isCheckMate(Point kingPosition, PlayerColor pieceColor) {
+        System.out.println("START checking check mate...");
         Piece[][] board = Client.getGame().getBoard();
+
+        System.out.println("checking if king is safe...");
+        Point kingAttacker = getAttackerCell(kingPosition, pieceColor, board);
+        if (kingAttacker == null) {
+            return false;
+        }
 
         final Point[] kingMoves = {
                 new Point(-1, -1),
@@ -97,45 +104,58 @@ public class Check {
                 new Point(-1, 0)
         };
 
+        System.out.println("checking if king can escape...");
         for (Point move : kingMoves) {
             Point checkedCell = new Point(kingPosition.x + move.x, kingPosition.y + move.y);
+            if (!isInsideBoard(checkedCell) || isCellAttacked(checkedCell, pieceColor, board)) continue;
 
-            if (isInsideBoard(checkedCell) &&
-                    !isCellAttacked(checkedCell, pieceColor, board)) {
+            if (board[checkedCell.y][checkedCell.x] != null &&
+                    board[checkedCell.y][checkedCell.x].getColor() == pieceColor) {
+                continue;
+            }
 
-                if (board[checkedCell.y][checkedCell.x] != null &&
-                        board[checkedCell.y][checkedCell.x].getColor() == pieceColor) {
-                    continue;
-                }
+            return false;
+        }
 
+        System.out.println("checking if piece is eatable...");
+        PlayerColor attackerColor = pieceColor == PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+        Point eatingPiece = getAttackerCell(kingAttacker, attackerColor, board);
+        if (eatingPiece != null) {
+            if (eatingPiece.x == kingPosition.x && eatingPiece.y == kingPosition.y) {
+                if (!isCellAttacked(kingAttacker, attackerColor, board)) return false;
+            } else {
                 return false;
             }
         }
 
-        Point kingAttacker = getAttackerCell(kingPosition, pieceColor, board);
-        if (kingAttacker == null) {
-            return false;
-        }
-
         Point direction = new Point(
-                Integer.compare(kingPosition.x, kingAttacker.x),
-                Integer.compare(kingPosition.y, kingAttacker.y)
+                Integer.compare(kingAttacker.x, kingPosition.x),
+                Integer.compare(kingAttacker.y, kingPosition.y)
         );
+
+        System.out.println("checking if piece is a knight...");
+        if (Math.abs(direction.x) == Math.abs(direction.y)
+                && Math.abs(kingAttacker.x - kingPosition.x) != Math.abs(kingAttacker.y - kingPosition.y))
+            return false;
 
         Point pathController = new Point(kingPosition.x + direction.x, kingPosition.y + direction.y);
 
+        System.out.println("checking if some piece can shield...");
         while (isInsideBoard(pathController) &&
                 board[pathController.y][pathController.x] == null) {
 
-            if (isCellAttacked(pathController, Client.getGame().getOpponentColor(), board)) {
+            Point shieldPiece = getAttackerCell(pathController, pieceColor, board);
 
-                return false;
+            System.out.println(shieldPiece);
+            if (shieldPiece != null && shieldPiece.x == kingPosition.x && shieldPiece.y == kingPosition.y) {
+                if (board[shieldPiece.y][shieldPiece.x].canMove(pathController, board)) return false;
             }
 
             pathController.x += direction.x;
             pathController.y += direction.y;
         }
 
+        System.out.println("returning true");
         return true;
     }
 }
