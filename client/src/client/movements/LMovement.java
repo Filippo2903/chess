@@ -1,5 +1,7 @@
 package client.movements;
 
+import client.piece.Piece;
+
 import java.awt.*;
 
 public class LMovement implements Movement {
@@ -19,7 +21,7 @@ public class LMovement implements Movement {
     }
 
     @Override
-    public boolean canMove(Point from, Point to) {
+    public boolean canMove(Point from, Point to, Piece[][] board) {
         for (Point move : moves) {
             if (MovementUtils.checkMove(from, to, move)) {
                 return true;

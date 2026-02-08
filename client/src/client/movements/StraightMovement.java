@@ -1,5 +1,7 @@
 package client.movements;
 
+import client.piece.Piece;
+
 import java.awt.*;
 
 public class StraightMovement implements Movement {
@@ -10,7 +12,7 @@ public class StraightMovement implements Movement {
     }
 
     /**
-     * @return the direction of the move, return a Point(0, 0) if the move is not straight
+     * @return direction of the move, return a Point(0, 0) if the move is not straight
      */
     private Point straightMove(Point from, Point to) {
         Point direction = new Point(0, 0);
@@ -27,7 +29,7 @@ public class StraightMovement implements Movement {
     }
 
     @Override
-    public boolean canMove(Point from, Point to) {
+    public boolean canMove(Point from, Point to, Piece[][] board) {
         Point direction = straightMove(from, to);
 
         if (direction.x == 0 && direction.y == 0) {
@@ -35,7 +37,7 @@ public class StraightMovement implements Movement {
         }
 
         if (linearMovement) {
-            return MovementUtils.isPathFree(from, to, direction);
+            return MovementUtils.isPathFree(from, to, direction, board);
         }
 
         return MovementUtils.checkMove(from, to, direction);

@@ -7,8 +7,6 @@ import gameUtils.PieceType;
 import java.awt.*;
 
 public class MovementUtils {
-    private static Piece[][] board = new Piece[Game.DIM_CHESSBOARD][Game.DIM_CHESSBOARD];
-
     /**
      * Check if the move made is the one being checked
      *
@@ -23,15 +21,6 @@ public class MovementUtils {
     }
 
     /**
-     * Set the current board
-     *
-     * @param board The board to set
-     */
-    public static void setBoard(Piece[][] board) {
-        MovementUtils.board = board;
-    }
-
-    /**
      * Check if the path between two points is valid
      *
      * @param from      The starting point
@@ -39,7 +28,7 @@ public class MovementUtils {
      * @param direction The direction
      * @return <code>true</code> if the path is valid, <code>false</code> if it's not valid
      */
-    public static boolean isPathFree(Point from, Point to, Point direction) {
+    public static boolean isPathFree(Point from, Point to, Point direction, Piece[][] board) {
         Point ghostPiece = new Point(from.x, from.y);
 
         while (ghostPiece.x != to.x - direction.x || ghostPiece.y != to.y - direction.y) {
@@ -55,7 +44,7 @@ public class MovementUtils {
     }
 
 
-    public static boolean checkCastleRules(Point rookPosition) {
+    public static boolean checkCastleRules(Point rookPosition, Piece[][] board) {
         final Point KING_POSITION = new Point(4, 7);
 
         return

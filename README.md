@@ -1,53 +1,87 @@
-# Chess
+# Chess - Multiplayer Online
 
-**Chess** is a multiplayer chess application that enables players to compete online using real-time interactions. The application employs a client-server architecture to manage game state and communication. 
+A real-time multiplayer Chess application built in **Java** using a **Client-Server** architecture. This project enables two players to compete online with synchronized game states, move validation, and an interactive GUI.
 
 ## Features
 
-### Client-Side Functionality
-- **Server Communication**:
-  - Connects to the server using WebSockets.
-  - Requests the server to start a game session.
-  - Receives player color (white or black) when another client connects.
-  - Synchronizes board state with the server during gameplay.
-- **Chess Logic Implementation**:
-  - Drag-and-drop functionality lets players interactively move pieces on the board.
-  - Piece movement is implemented using an object-oriented approach with inheritance for defining specific movement rules of each chess piece.
-  - The code validates the legality of moves, checking for:
-    - Basic rule compliance (e.g., allowed moves for each piece).
-    - Special moves like castling and en passant.
-    - Board state conditions like checks.
+### Client-Side
+* **Interactive GUI:** Drag-and-drop interface for moving pieces.
+* **Real-time Communication:** Connects to the server via Java Sockets.
+* **Move Validation:**
+    * Legal moves for all pieces.
+    * Special moves: Castling and En Passant.
+    * Check/Checkmate detection.
+* **State Synchronization:** Automatically updates the board when the opponent moves.
 
-### Server-Side Functionality
-- **Game Management**:
-  - Handles connections from two clients and assigns player colors randomly.
-  - Listens for moves from one client and mirrors them to the other client, ensuring consistent game state across clients.
-  - Manages game sessions until the match concludes.
-  - Closes communication at the end of the match.
+### Server-Side
+* **Session Management:** Handles multiple client connections.
+* **Matchmaking:** Pairs two clients into a game session.
+* **State Mirroring:** Relays move between players to maintain game consistency.
+* **Color Assignment:** Randomly assigns White/Black to players.
 
-## Installation
+## Tech Stack
 
-### Usage
- - Launch the server script.
- - Start two clients.
- - Press the `Start` button to find a game.
- - Once both players are connected, the server assigns colors and starts the game.
- - Drag and drop pieces to make a move. The server ensures synchronization between clients.
- - The game ends when one player checkmates.
+* **Language:** Java
+* **Networking:** Java Sockets (TCP)
+* **GUI:** Java Swing / AWT
+* **IDE:** IntelliJ IDEA
 
-### Folder Structure
+## Project Structure
+```text
+chess/
+├── client/          # Client source code
+│   ├── src/         # Game logic, input handling, and GUI
+│   └── assets/      # Static resources (piece images, sounds)
+├── server/          # Server source code
+│   ├── src/         # Connection handling and game state management
+├── lib/             # External graphics libraries/dependencies
+├── utils/           # Shared utility classes
+└── README.md        # Project documentation
 ```
-chess-master/
- ├── client/
- │ ├── assets/ # Static resources (images)
- │ ├── src/ # Client-side logic (piece movement, drag-and-drop, sounds)
- │ └── client.iml # IntelliJ IDEA module file
- ├── server/
- │ ├── src/ # Server-side scripts for managing connections and game state
- | └── server.iml # IntelliJ IDEA module file
- ├── lib/ # Graphics Library
- ├── utils/ # Utility scripts
- ├── .gitignore # Git ignore rules
- ├── README.md # Project documentation
- └── chess.iml # IntelliJ IDEA module file
-```
+
+## Installation & Usage
+
+### Prerequisites
+* Java Development Kit (JDK) 8 or higher.
+* IntelliJ IDEA (recommended).
+
+### Option 1: Running with JARs (Recommended)
+
+1.  **Download the Release**
+    Go to the **Releases** section of this repository and download the latest version files:
+    * `server.jar`
+    * `client.jar`
+
+2.  **Start the Server**
+    Open a terminal/command prompt in the folder where you downloaded the files and run:
+    ```bash
+    java -jar server.jar
+    ```
+    The server will start listening for connections.
+
+3.  **Start the Clients**
+    Open a new terminal window and run:
+    ```bash
+    java -jar client.jar
+    ```
+    Repeat this step in another terminal to launch the second player.
+
+### Option 2: Building from Source
+
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/Filippo2903/chess
+    ```
+
+2.  **Open in IDE**
+    Open the project folder in IntelliJ IDEA. Ensure the project JDK is configured correctly.
+
+3.  **Run the Server**
+    Navigate to the server source package and run the main server class.
+
+4.  **Run the Clients**
+    Navigate to the client source package and run the main client class. Run it a second time to simulate the opponent.
+
+## Playing the Game
+1. Click **Start** to connect.
+2. Once two players are connected, the game begins automatically.

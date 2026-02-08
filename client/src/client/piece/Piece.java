@@ -87,9 +87,9 @@ public class Piece extends JLabel {
      * @param to The cell where the piece wants to move
      * @return <code>true</code> if the piece can move, <code>false</code> if it can't move
      */
-    public boolean canMove(Point to, Piece[][] board) {
+    public boolean canMove(Point from, Point to, Piece[][] board) {
         for (Movement movement : pieceMoves.movements) {
-            if (movement.canMove(currentPosition, to, board)) {
+            if (movement.canMove(from, to, board)) {
                 return true;
             }
         }
@@ -98,15 +98,16 @@ public class Piece extends JLabel {
     }
 
     /**
-     * Move a piece to a point with all the needed checks
+     * Move a piece, checking if it can
      *
      * @param to Arrival cell
      */
     public void move(Point to) {
-        // If it's not the client turn or the client tries to move a piece that isn't his, don't move
+        Piece[][] board = Client.getGame().getBoard();
+        // If it's not the client's turn or the client tries to move a piece that isn't his, don't move
         if (CheckPlayerMove.isNotPlayerTurn() ||
                 CheckPlayerMove.isNotPlayerPiece(this.getColor()) ||
-                CheckPlayerMove.isMovingOnHisOwnPiece(this.getColor(), to)) {
+                CheckPlayerMove.isMovingOnHisOwnPiece(this.getColor(), to, board)) {
 
             this.setLocation(currentPosition.x * Game.CELL_SIZE, currentPosition.y * Game.CELL_SIZE);
             return;
@@ -120,18 +121,18 @@ public class Piece extends JLabel {
 
         // Check if the piece can move to the desired cell
         for (Movement movement : pieceMoves.movements) {
-            if (movement.canMove(currentPosition, to, Client.getGame().getBoard())) {
-                if (this.getType() == PieceType.KING && Check.isCellAttacked(to, pieceColor, Client.getGame().getBoard())) {
-                    continue;
+            if (movement.canMove(currentPosition, to, board)) {
+                if (this.getType() == PieceType.KING && Check.isCellAttacked(to, pieceColor, board)) {
+                    continue; // TODO Should be return???
                 }
 
-                if (Check.isCellAttacked(Client.getGame().findKing(Client.getGame().getBoard(), pieceColor), pieceColor, Client.getGame().getBoard()) &&
+                if (Check.isCellAttacked(Client.getGame().findKing(board, pieceColor), pieceColor, board) &&
                         (movement.getSpecialMove() == SpecialMoveType.KINGSIDE_CASTLE ||
                                 movement.getSpecialMove() == SpecialMoveType.QUEENSIDE_CASTLE)) {
                     continue;
                 }
 
-                Piece[][] temporaryBoard = Arrays.stream(Client.getGame().getBoard())
+                Piece[][] temporaryBoard = Arrays.stream(board)
                         .map(row -> Arrays.copyOf(row, row.length))
                         .toArray(Piece[][]::new);
                 temporaryBoard[currentPosition.y][currentPosition.x] = null;

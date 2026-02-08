@@ -21,6 +21,8 @@ public class Server {
     private static Packet mirrorMove(Packet packet) {
         packet.from.y = 7 - packet.from.y;
         packet.to.y = 7 - packet.to.y;
+        packet.from.x = 7 - packet.from.x;
+        packet.to.x = 7 - packet.to.x;
 
         return packet;
     }

@@ -1,5 +1,7 @@
 package client.movements;
 
+import client.piece.Piece;
+
 import java.awt.*;
 
 public class DiagonalMovement implements Movement {
@@ -28,7 +30,7 @@ public class DiagonalMovement implements Movement {
     }
 
     @Override
-    public boolean canMove(Point from, Point to) {
+    public boolean canMove(Point from, Point to, Piece[][] board) {
         Point direction = moveDirection(from, to);
 
         if (direction.x == 0 && direction.y == 0) {
@@ -36,7 +38,7 @@ public class DiagonalMovement implements Movement {
         }
 
         if (isLongMovement) {
-            return MovementUtils.isPathFree(from, to, direction);
+            return MovementUtils.isPathFree(from, to, direction, board);
         }
 
         return MovementUtils.checkMove(from, to, direction);

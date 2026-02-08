@@ -154,7 +154,7 @@ public class Game {
     /**
      * Get the type of the promotion
      *
-     * @return the type decided from the player
+     * @return queen (TODO: should allow deciding the piece type)
      */
     public PieceMoves promptPromotionType() {
         return PieceMoves.QUEEN;
@@ -205,15 +205,36 @@ public class Game {
     }
 
     /**
+     * Get the board from enemy pov
+     *
+     * @param board The board to flip
+     */
+    private static Piece[][] getEnemyBoard(Piece[][] board) {
+        Piece[][] enemyBoard = new Piece[DIM_CHESSBOARD][DIM_CHESSBOARD];
+
+        for (int i = 0; i < DIM_CHESSBOARD; i++) {
+            for (int j = 0; j < DIM_CHESSBOARD; j++) {
+                enemyBoard[DIM_CHESSBOARD - 1 - i][DIM_CHESSBOARD - 1 - j] = board[i][j];
+            }
+        }
+        return enemyBoard;
+    }
+
+    private Point rotatePOV(Point cell) {
+        return new Point(DIM_CHESSBOARD - cell.x - 1, DIM_CHESSBOARD - cell.y - 1);
+    }
+
+    /**
      * Check if the client has won
      *
-     * @param to The last move
      * @return <code>true</code> if the client has won, otherwise <code>false</code>
      */
-    public boolean winCheck(Point to) {
-        Point oppositeKingPosition = findKing(board, getOpponentColor());
-        if (Check.isCheckMate(oppositeKingPosition, getOpponentColor())) {
-            highlightCheckmate(to, oppositeKingPosition);
+    public boolean winCheck() {
+        Piece[][] enemyBoard = getEnemyBoard(board);
+        Point oppositeKingPosition = findKing(enemyBoard, getOpponentColor());
+        Point checkerPiece = Check.isCheckMate(enemyBoard, oppositeKingPosition, getOpponentColor());
+        if (checkerPiece != null) {
+            highlightCheckmate(rotatePOV(checkerPiece), rotatePOV(oppositeKingPosition));
             return true;
         }
         return false;
@@ -226,13 +247,10 @@ public class Game {
      */
     public boolean defeatCheck() {
         Point kingPosition = findKing(board, clientColor);
-        Point attackerCell = Check.getAttackerCell(kingPosition, clientColor, board);
-
-        if (attackerCell != null) {
-            if (Check.isCheckMate(kingPosition, clientColor)) {
-                highlightCheckmate(attackerCell, kingPosition);
-                return true;
-            }
+        Point checkerPiece = Check.isCheckMate(board, kingPosition, clientColor);
+        if (checkerPiece != null) {
+            highlightCheckmate(checkerPiece, kingPosition);
+            return true;
         }
         return false;
     }
@@ -318,7 +336,7 @@ public class Game {
             piece.setPosition(to);
         }
 
-        if (winCheck(to)) {
+        if (winCheck()) {
             endGame();
             return;
         }
@@ -339,10 +357,7 @@ public class Game {
 
         Client.endCommunication();
 
-        playerTurn = PlayerColor.BLACK;
-        clientColor = PlayerColor.WHITE;
-
-        initPlayButton("Nuova partita");
+        initPlayButton("New Game");
     }
 
     /**
@@ -403,7 +418,7 @@ public class Game {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 if (JOptionPane.showConfirmDialog(window,
-                        "Sei sicuro?", "Abbandona",
+                        "Are you sure?", "Quit",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 
@@ -460,9 +475,9 @@ public class Game {
                 for (int i = 0; i < DIM_CHESSBOARD; i++) {
                     for (int j = 0; j < DIM_CHESSBOARD; j++) {
                         if ((i + j) % 2 == 0) {
-                            g.setColor(clientColor == PlayerColor.WHITE ? BLACK_CELL : WHITE_CELL);
+                            g.setColor(BLACK_CELL);
                         } else {
-                            g.setColor(clientColor == PlayerColor.WHITE ? WHITE_CELL : BLACK_CELL);
+                            g.setColor(WHITE_CELL);
                         }
                         g.fillRect(i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                     }
@@ -504,7 +519,11 @@ public class Game {
         PieceMoves pieceMoves;
         for (PlayerColor playerColor : PlayerColor.values()) {
             for (int x = 0; x < DIM_CHESSBOARD; x++) {
-                pieceMoves = startRow[x];
+                if (clientColor == PlayerColor.WHITE) {
+                    pieceMoves = startRow[x];
+                } else {
+                    pieceMoves = startRow[DIM_CHESSBOARD - 1 - x];
+                }
 
                 // Add pieces
                 piece = new Piece(playerColor, pieceMoves);
@@ -547,7 +566,7 @@ public class Game {
      */
     public void startWindow() {
         displayWindow();
-        initPlayButton("Gioca");
+        initPlayButton("Play");
         drawBoard();
     }
 

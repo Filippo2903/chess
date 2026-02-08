@@ -20,11 +20,10 @@ public class EnPassant implements Movement {
      * @param to   The arrival cell
      * @return <code>true</code> if the piece can do en passant
      */
-    private boolean canEnPassant(Point from, Point to) {
+    private boolean canEnPassant(Point from, Point to, Piece[][] board) {
         final int EN_PASSANT_ROW = 3;
         final int START_ROW = 1;
 
-        Piece[][] board = Client.getGame().getBoard();
         Point[] enemyMove = Client.getGame().getEnemyMove();
 
         final int FROM = 0;
@@ -38,10 +37,10 @@ public class EnPassant implements Movement {
     }
 
     @Override
-    public boolean canMove(Point from, Point to) {
+    public boolean canMove(Point from, Point to, Piece[][] board) {
         for (Point move : moves) {
             if (MovementUtils.checkMove(from, to, move) &&
-                    canEnPassant(from, to)) {
+                    canEnPassant(from, to, board)) {
 
                 return true;
             }

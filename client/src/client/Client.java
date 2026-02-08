@@ -23,11 +23,8 @@ public class Client {
     public static void main(String[] args) {
         Theme.setTheme();
 
-        System.out.println("Starting client...");
-
         game = new Game();
         game.startWindow();
-
     }
 
     /**
@@ -88,7 +85,7 @@ public class Client {
         System.out.println("Connecting to the server...");
         while (true) {
             try {
-                socket = new Socket("147.93.63.174", 4445);
+                socket = new Socket(InetAddress.getLocalHost(), 4445);
                 is = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 os = new PrintWriter(socket.getOutputStream(), true);
 

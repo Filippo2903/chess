@@ -32,8 +32,7 @@ public class CheckPlayerMove {
      * @param cell  where the player is trying to move
      * @return true if it is his piece, otherwise false
      */
-    public static boolean isMovingOnHisOwnPiece(PlayerColor color, Point cell) {
-        Piece[][] board = Client.getGame().getBoard();
+    public static boolean isMovingOnHisOwnPiece(PlayerColor color, Point cell, Piece[][] board) {
         return board[cell.y][cell.x] != null && board[cell.y][cell.x].getColor() == color;
     }
 }

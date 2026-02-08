@@ -75,7 +75,7 @@ public class PlayerHandler {
         String serializedMove = null;
 
         try {
-            // Wait from sender client
+            // Wait for a sender client
             serializedMove = input.nextLine();
         } catch (NoSuchElementException e) {
             System.out.println("Player " + playerColor + " disconnected");
